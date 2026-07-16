@@ -2,1016 +2,705 @@
 <html lang="th">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>AI Flight Risk Index (AFRI) – Predictive Delay Dashboard</title>
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
+<title>AFRI – AI Flight Risk Dashboard</title>
 <style>
-  @import url('https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+Thai:wght@300;400;500;600;700&family=IBM+Plex+Mono:wght@400;500&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+Thai:wght@300;400;500;600;700&family=IBM+Plex+Mono:wght@400;600&display=swap');
 
-  :root {
-    --bg-primary: #0a0e1a;
-    --bg-secondary: #0f1629;
-    --bg-card: #131c35;
-    --bg-card2: #172040;
-    --border: #1e2d52;
-    --border-light: #253565;
-    --text-primary: #e2e8f8;
-    --text-secondary: #7a94c4;
-    --text-muted: #4a5a8a;
-    --accent-blue: #3b82f6;
-    --accent-cyan: #22d3ee;
-    --risk-red: #ef4444;
-    --risk-red-bg: rgba(239,68,68,0.12);
-    --risk-orange: #f97316;
-    --risk-orange-bg: rgba(249,115,22,0.12);
-    --risk-yellow: #eab308;
-    --risk-yellow-bg: rgba(234,179,8,0.10);
-    --risk-green: #22c55e;
-    --risk-green-bg: rgba(34,197,94,0.10);
+:root {
+  --bg: #080d1a;
+  --bg2: #0d1428;
+  --card: #111c36;
+  --card2: #162040;
+  --border: #1e2d52;
+  --border2: #253565;
+  --text: #dde6f8;
+  --muted: #5a6f9c;
+  --dim: #3a4d78;
+  --blue: #3b82f6;
+  --cyan: #22d3ee;
+  --red: #ef4444;
+  --orange: #f97316;
+  --yellow: #eab308;
+  --green: #22c55e;
+  --red-bg: rgba(239,68,68,0.12);
+  --orange-bg: rgba(249,115,22,0.12);
+  --yellow-bg: rgba(234,179,8,0.10);
+  --green-bg: rgba(34,197,94,0.10);
+  --radius: 14px;
+  --radius-sm: 8px;
+}
+
+* { margin:0; padding:0; box-sizing:border-box; -webkit-tap-highlight-color:transparent; }
+
+body {
+  font-family: 'IBM Plex Sans Thai', sans-serif;
+  background: var(--bg);
+  color: var(--text);
+  font-size: 14px;
+  min-height: 100vh;
+  overscroll-behavior: none;
+}
+
+/* ── HEADER ───────────────────────────────────── */
+.header {
+  background: linear-gradient(135deg,#0c1630,#0f2060,#0c1630);
+  border-bottom: 1px solid var(--border2);
+  padding: 0 16px;
+  height: 56px;
+  display: flex; align-items: center; justify-content: space-between;
+  position: sticky; top: 0; z-index: 200;
+  box-shadow: 0 2px 20px rgba(0,0,40,0.7);
+}
+
+.hdr-left { display:flex; align-items:center; gap:10px; }
+
+.logo {
+  width:36px; height:36px; border-radius:9px;
+  background: linear-gradient(135deg,#1d4ed8,#06b6d4);
+  display:flex; align-items:center; justify-content:center;
+  font-size:17px;
+  box-shadow: 0 0 14px rgba(59,130,246,0.5);
+  flex-shrink:0;
+}
+
+.hdr-title h1 { font-size:14px; font-weight:700; letter-spacing:.3px; }
+.hdr-title p  { font-size:10px; color:var(--muted); margin-top:1px; }
+
+.hdr-right { display:flex; align-items:center; gap:10px; }
+
+.live-pill {
+  display:flex; align-items:center; gap:5px;
+  background:rgba(34,197,94,0.12); border:1px solid rgba(34,197,94,0.28);
+  border-radius:20px; padding:4px 10px;
+  font-size:10px; font-weight:700; color:var(--green);
+}
+.live-dot { width:6px; height:6px; background:var(--green); border-radius:50%; animation:blink 1.4s infinite; }
+@keyframes blink { 0%,100%{opacity:1} 50%{opacity:.3} }
+
+.clock { font-family:'IBM Plex Mono',monospace; font-size:13px; color:var(--cyan); font-weight:600; letter-spacing:1px; }
+
+/* ── BOTTOM TAB NAV (mobile) ──────────────────── */
+.tab-nav {
+  position: fixed; bottom:0; left:0; right:0;
+  background: var(--bg2);
+  border-top: 1px solid var(--border);
+  display: flex;
+  z-index: 200;
+  height: 60px;
+  padding-bottom: env(safe-area-inset-bottom);
+}
+
+.tab-btn {
+  flex:1; display:flex; flex-direction:column; align-items:center; justify-content:center;
+  gap:3px; cursor:pointer; background:none; border:none; color:var(--muted);
+  font-family:'IBM Plex Sans Thai',sans-serif; font-size:10px; font-weight:500;
+  transition: color .15s;
+  -webkit-tap-highlight-color: transparent;
+}
+.tab-btn.active { color:var(--blue); }
+.tab-btn .tab-icon { font-size:20px; line-height:1; }
+
+/* ── PAGES ────────────────────────────────────── */
+.page { display:none; padding: 14px 12px 80px; }
+.page.active { display:block; }
+
+/* ── KPI GRID ─────────────────────────────────── */
+.kpi-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 10px;
+  margin-bottom: 16px;
+}
+
+.kpi-card {
+  background: var(--card);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 14px;
+  position: relative;
+  overflow: hidden;
+}
+.kpi-card::after {
+  content:''; position:absolute; top:0; left:0; right:0; height:3px;
+}
+.kpi-card.total::after { background:linear-gradient(90deg,#3b82f6,#06b6d4); }
+.kpi-card.c-red::after    { background:var(--red); }
+.kpi-card.c-orange::after { background:var(--orange); }
+.kpi-card.c-yellow::after { background:var(--yellow); }
+.kpi-card.c-green::after  { background:var(--green); }
+.kpi-card.total { grid-column: span 2; }
+
+.kpi-lbl { font-size:10px; font-weight:700; color:var(--muted); text-transform:uppercase; letter-spacing:.7px; margin-bottom:6px; }
+.kpi-val { font-size:32px; font-weight:700; font-family:'IBM Plex Mono',monospace; line-height:1; }
+.kpi-sub { font-size:10px; color:var(--dim); margin-top:4px; }
+.kpi-card.total .kpi-val { color:var(--cyan); font-size:40px; }
+.kpi-card.c-red .kpi-val    { color:var(--red); }
+.kpi-card.c-orange .kpi-val { color:var(--orange); }
+.kpi-card.c-yellow .kpi-val { color:var(--yellow); }
+.kpi-card.c-green .kpi-val  { color:var(--green); }
+
+/* OTP mini row in total card */
+.otp-row { display:flex; gap:8px; margin-top:10px; flex-wrap:wrap; }
+.otp-item { flex:1; min-width:60px; background:var(--bg2); border-radius:8px; padding:7px 10px; text-align:center; }
+.otp-item-val { font-size:16px; font-weight:700; font-family:'IBM Plex Mono',monospace; }
+.otp-item-lbl { font-size:9px; color:var(--muted); margin-top:2px; }
+
+/* ── SECTION HEADER ───────────────────────────── */
+.sec-hdr {
+  display:flex; align-items:center; justify-content:space-between;
+  margin-bottom:10px; margin-top:4px;
+}
+.sec-hdr h2 { font-size:13px; font-weight:700; color:var(--text); }
+.sec-badge {
+  font-size:10px; font-weight:700;
+  background:rgba(59,130,246,.15); color:var(--blue);
+  border:1px solid rgba(59,130,246,.3); border-radius:10px; padding:2px 9px;
+}
+
+/* ── FILTER PILLS ─────────────────────────────── */
+.pill-row {
+  display:flex; gap:7px; overflow-x:auto; padding-bottom:4px;
+  margin-bottom:12px; scrollbar-width:none;
+}
+.pill-row::-webkit-scrollbar { display:none; }
+
+.pill {
+  flex-shrink:0; padding:6px 14px; border-radius:20px;
+  border:1px solid var(--border); background:transparent;
+  color:var(--muted); font-size:12px; font-weight:600;
+  cursor:pointer; font-family:'IBM Plex Sans Thai',sans-serif;
+  white-space:nowrap; transition: all .15s;
+}
+.pill.active       { background:var(--blue); border-color:var(--blue); color:#fff; }
+.pill.pr.active    { background:var(--red); border-color:var(--red); color:#fff; }
+.pill.po.active    { background:var(--orange); border-color:var(--orange); color:#fff; }
+.pill.py.active    { background:var(--yellow); border-color:var(--yellow); color:#000; }
+.pill.pg.active    { background:var(--green); border-color:var(--green); color:#000; }
+
+/* ── FLIGHT CARDS ─────────────────────────────── */
+.flight-list { display:flex; flex-direction:column; gap:9px; }
+
+.flight-card {
+  background:var(--card); border:1px solid var(--border);
+  border-radius:var(--radius); padding:13px 14px;
+  cursor:pointer; transition: all .15s; active:opacity:.8;
+  border-left: 4px solid transparent;
+}
+.flight-card:active { background:var(--card2); }
+.flight-card.sel { border-left-color:var(--blue); background:var(--card2); }
+
+.fc-top { display:flex; align-items:flex-start; justify-content:space-between; margin-bottom:8px; }
+
+.fc-flight { font-family:'IBM Plex Mono',monospace; font-size:17px; font-weight:700; color:var(--cyan); }
+.fc-al { display:inline-block; font-size:10px; font-weight:700; background:rgba(59,130,246,.15); color:#93c5fd; border-radius:5px; padding:2px 7px; margin-top:3px; }
+
+.risk-circle {
+  width:52px; height:52px; border-radius:50%;
+  display:flex; flex-direction:column; align-items:center; justify-content:center;
+  border:3px solid; font-family:'IBM Plex Mono',monospace; font-weight:700;
+  font-size:15px; line-height:1.1; flex-shrink:0;
+}
+.risk-lbl-sm { font-size:8px; font-family:'IBM Plex Sans Thai',sans-serif; font-weight:500; }
+
+.fc-mid {
+  display:grid; grid-template-columns:1fr 1fr 1fr;
+  gap:6px; margin-bottom:8px;
+}
+.fc-info { background:var(--bg2); border-radius:var(--radius-sm); padding:6px 9px; }
+.fc-info-lbl { font-size:9px; color:var(--muted); text-transform:uppercase; letter-spacing:.4px; }
+.fc-info-val { font-size:12px; font-weight:600; font-family:'IBM Plex Mono',monospace; margin-top:1px; }
+
+.fc-factors {
+  display:flex; gap:5px; flex-wrap:wrap;
+}
+.fc-factor {
+  font-size:10px; padding:3px 8px; border-radius:10px;
+  background:rgba(255,255,255,.05); color:var(--muted);
+  border:1px solid var(--border); white-space:nowrap;
+}
+
+/* risk colours */
+.rh { --rc:var(--red);    --rb:var(--red-bg); }
+.ro { --rc:var(--orange); --rb:var(--orange-bg); }
+.ry { --rc:var(--yellow); --rb:var(--yellow-bg); }
+.rg { --rc:var(--green);  --rb:var(--green-bg); }
+
+.risk-circle { border-color:var(--rc); color:var(--rc); }
+
+/* ── DETAIL PAGE ──────────────────────────────── */
+.back-btn {
+  display:flex; align-items:center; gap:6px;
+  background:var(--card); border:1px solid var(--border);
+  border-radius:10px; padding:8px 14px; margin-bottom:14px;
+  cursor:pointer; font-size:13px; color:var(--muted); font-family:'IBM Plex Sans Thai',sans-serif;
+}
+
+.detail-hero {
+  background:var(--card); border:1px solid var(--border);
+  border-radius:var(--radius); padding:18px;
+  display:flex; align-items:center; justify-content:space-between;
+  margin-bottom:12px;
+}
+.detail-flight-num { font-family:'IBM Plex Mono',monospace; font-size:26px; font-weight:700; color:var(--cyan); }
+.detail-sub { font-size:12px; color:var(--muted); margin-top:4px; }
+
+.big-circle {
+  width:72px; height:72px; border-radius:50%;
+  display:flex; flex-direction:column; align-items:center; justify-content:center;
+  border:4px solid; font-weight:700; font-family:'IBM Plex Mono',monospace;
+  font-size:20px; line-height:1.1;
+}
+.big-lbl { font-size:9px; font-family:'IBM Plex Sans Thai',sans-serif; font-weight:500; }
+
+.info-grid {
+  display:grid; grid-template-columns:1fr 1fr;
+  gap:8px; margin-bottom:12px;
+}
+.info-cell { background:var(--card); border:1px solid var(--border); border-radius:var(--radius-sm); padding:10px 12px; }
+.info-lbl { font-size:9px; color:var(--muted); text-transform:uppercase; letter-spacing:.5px; margin-bottom:3px; }
+.info-val { font-size:14px; font-weight:600; font-family:'IBM Plex Mono',monospace; }
+
+.factor-section { background:var(--card); border:1px solid var(--border); border-radius:var(--radius); padding:14px; margin-bottom:12px; }
+.fs-title { font-size:11px; font-weight:700; color:var(--muted); text-transform:uppercase; letter-spacing:.7px; margin-bottom:10px; }
+
+.fbar-row { display:flex; align-items:center; gap:8px; margin-bottom:7px; }
+.fbar-lbl { width:100px; font-size:11px; color:var(--muted); white-space:nowrap; overflow:hidden; text-overflow:ellipsis; flex-shrink:0; }
+.fbar-track { flex:1; height:7px; background:rgba(255,255,255,.07); border-radius:4px; }
+.fbar-fill { height:100%; border-radius:4px; }
+.fbar-val { width:28px; text-align:right; font-size:11px; font-family:'IBM Plex Mono',monospace; font-weight:600; }
+
+.factor-tags { display:flex; gap:6px; flex-wrap:wrap; }
+.factor-tag {
+  display:flex; align-items:center; gap:5px;
+  background:var(--bg2); border:1px solid var(--border);
+  border-radius:var(--radius-sm); padding:7px 10px;
+  font-size:12px; color:var(--text);
+}
+
+.rec-section {
+  background:rgba(59,130,246,.07); border:1px solid rgba(59,130,246,.2);
+  border-radius:var(--radius); padding:14px; margin-bottom:12px;
+}
+.rec-title { font-size:11px; font-weight:700; color:var(--blue); text-transform:uppercase; letter-spacing:.7px; margin-bottom:8px; }
+.rec-item { font-size:13px; color:var(--text); margin-bottom:6px; padding-left:16px; position:relative; line-height:1.5; }
+.rec-item::before { content:'›'; position:absolute; left:3px; color:var(--blue); font-weight:700; }
+
+/* ── WEATHER PAGE ─────────────────────────────── */
+.weather-hero {
+  background:linear-gradient(135deg,#0f2060,#0d3b6e);
+  border:1px solid var(--border2); border-radius:var(--radius);
+  padding:20px; margin-bottom:12px;
+  display:flex; align-items:center; justify-content:space-between;
+}
+.w-main-temp { font-size:48px; font-weight:700; font-family:'IBM Plex Mono',monospace; color:#fff; line-height:1; }
+.w-main-cond { font-size:14px; color:#93c5fd; margin-top:4px; }
+.w-icon { font-size:64px; }
+
+.w-grid { display:grid; grid-template-columns:1fr 1fr; gap:10px; margin-bottom:12px; }
+.w-cell { background:var(--card); border:1px solid var(--border); border-radius:var(--radius-sm); padding:12px; text-align:center; }
+.w-val { font-size:22px; font-weight:700; font-family:'IBM Plex Mono',monospace; color:var(--cyan); }
+.w-lbl { font-size:10px; color:var(--muted); margin-top:3px; text-transform:uppercase; }
+
+.impact-banner {
+  background:var(--orange-bg); border:1px solid rgba(249,115,22,.3);
+  border-radius:var(--radius-sm); padding:12px 14px;
+  font-size:13px; color:var(--orange); display:flex; align-items:center; gap:8px;
+}
+
+/* ── TRAFFIC BAR ──────────────────────────────── */
+.traffic-section { background:var(--card); border:1px solid var(--border); border-radius:var(--radius); padding:14px; margin-top:12px; }
+.tbar-chart { display:flex; align-items:flex-end; gap:4px; height:70px; margin-bottom:6px; }
+.tbar-wrap { flex:1; display:flex; flex-direction:column; align-items:center; gap:2px; height:100%; justify-content:flex-end; }
+.tbar { width:100%; border-radius:3px 3px 0 0; min-height:5px; }
+.tbar-lbl { font-size:8px; color:var(--muted); }
+
+/* ── Scrollbar ────────────────────────────────── */
+::-webkit-scrollbar { width:4px; }
+::-webkit-scrollbar-track { background:transparent; }
+::-webkit-scrollbar-thumb { background:var(--border); border-radius:2px; }
+
+/* ── DESKTOP override (>= 768px) ─────────────── */
+@media (min-width:768px) {
+  .tab-nav { display:none; }
+  .page { padding-bottom: 20px; }
+
+  body { display:flex; flex-direction:column; }
+
+  .desktop-layout {
+    display:grid;
+    grid-template-columns: 1fr 360px;
+    gap:0;
+    flex:1;
   }
 
-  * { margin: 0; padding: 0; box-sizing: border-box; }
+  .page-flights { display:block !important; padding:18px; border-right:1px solid var(--border); }
+  .page-weather { display:block !important; padding:18px; background:var(--bg2); overflow-y:auto; }
+  .page-detail  { display:none !important; }
+  .page-summary { display:none !important; }
 
-  body {
-    font-family: 'IBM Plex Sans Thai', sans-serif;
-    background: var(--bg-primary);
-    color: var(--text-primary);
-    min-height: 100vh;
-    font-size: 13px;
+  .kpi-grid { grid-template-columns:repeat(5,1fr); }
+  .kpi-card.total { grid-column:auto; }
+  .kpi-card.total .kpi-val { font-size:32px; }
+
+  .flight-card .fc-mid { grid-template-columns:repeat(4,1fr); }
+
+  /* show detail as side overlay */
+  .desktop-detail-overlay {
+    display:block;
+    position:fixed; top:56px; right:0; bottom:0; width:380px;
+    background:var(--bg2); border-left:1px solid var(--border2);
+    overflow-y:auto; padding:16px; z-index:150;
+    transform:translateX(100%); transition:transform .25s;
   }
+  .desktop-detail-overlay.open { transform:translateX(0); }
 
-  /* ─── HEADER ─────────────────────────────────────────── */
-  .header {
-    background: linear-gradient(135deg, #0d1635 0%, #0f2060 50%, #0d1635 100%);
-    border-bottom: 1px solid var(--border-light);
-    padding: 0 24px;
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    height: 64px;
-    position: sticky;
-    top: 0;
-    z-index: 100;
-    box-shadow: 0 4px 24px rgba(0,0,40,0.6);
+  .close-overlay {
+    display:flex; align-items:center; gap:6px;
+    background:var(--card); border:1px solid var(--border);
+    border-radius:10px; padding:8px 14px; margin-bottom:14px;
+    cursor:pointer; font-size:13px; color:var(--muted);
+    font-family:'IBM Plex Sans Thai',sans-serif; border:none;
   }
-
-  .header-left {
-    display: flex;
-    align-items: center;
-    gap: 14px;
-  }
-
-  .logo-icon {
-    width: 40px; height: 40px;
-    background: linear-gradient(135deg, #1d4ed8, #06b6d4);
-    border-radius: 10px;
-    display: flex; align-items: center; justify-content: center;
-    font-size: 18px;
-    box-shadow: 0 0 20px rgba(59,130,246,0.5);
-  }
-
-  .header-title { line-height: 1.2; }
-  .header-title h1 { font-size: 16px; font-weight: 700; color: #e2e8f8; letter-spacing: 0.5px; }
-  .header-title p { font-size: 11px; color: var(--text-secondary); }
-
-  .header-right {
-    display: flex;
-    align-items: center;
-    gap: 20px;
-  }
-
-  .live-badge {
-    display: flex; align-items: center; gap: 6px;
-    background: rgba(34,197,94,0.12);
-    border: 1px solid rgba(34,197,94,0.3);
-    border-radius: 20px;
-    padding: 4px 12px;
-    font-size: 11px;
-    color: #22c55e;
-    font-weight: 600;
-  }
-
-  .live-dot {
-    width: 6px; height: 6px;
-    background: #22c55e;
-    border-radius: 50%;
-    animation: pulse 1.5s infinite;
-  }
-
-  @keyframes pulse {
-    0%,100% { opacity: 1; transform: scale(1); }
-    50% { opacity: 0.5; transform: scale(1.4); }
-  }
-
-  .header-clock {
-    font-family: 'IBM Plex Mono', monospace;
-    font-size: 15px;
-    color: var(--accent-cyan);
-    font-weight: 500;
-    letter-spacing: 1px;
-  }
-
-  .header-date {
-    font-size: 11px;
-    color: var(--text-secondary);
-    text-align: right;
-    line-height: 1.6;
-  }
-
-  /* ─── LAYOUT ─────────────────────────────────────────── */
-  .layout {
-    display: grid;
-    grid-template-columns: 1fr 340px;
-    gap: 0;
-    min-height: calc(100vh - 64px);
-  }
-
-  .main-panel {
-    padding: 20px;
-    border-right: 1px solid var(--border);
-    overflow-y: auto;
-  }
-
-  .side-panel {
-    padding: 20px 16px;
-    overflow-y: auto;
-    background: var(--bg-secondary);
-  }
-
-  /* ─── KPI CARDS ──────────────────────────────────────── */
-  .kpi-row {
-    display: grid;
-    grid-template-columns: repeat(5, 1fr);
-    gap: 12px;
-    margin-bottom: 20px;
-  }
-
-  .kpi-card {
-    background: var(--bg-card);
-    border: 1px solid var(--border);
-    border-radius: 12px;
-    padding: 14px 16px;
-    position: relative;
-    overflow: hidden;
-    transition: border-color 0.2s;
-  }
-
-  .kpi-card::before {
-    content: '';
-    position: absolute;
-    top: 0; left: 0; right: 0;
-    height: 3px;
-  }
-
-  .kpi-card.total::before { background: linear-gradient(90deg, #3b82f6, #06b6d4); }
-  .kpi-card.red::before   { background: #ef4444; }
-  .kpi-card.orange::before{ background: #f97316; }
-  .kpi-card.yellow::before{ background: #eab308; }
-  .kpi-card.green::before { background: #22c55e; }
-
-  .kpi-label {
-    font-size: 10px;
-    color: var(--text-muted);
-    text-transform: uppercase;
-    letter-spacing: 0.8px;
-    margin-bottom: 6px;
-    font-weight: 600;
-  }
-
-  .kpi-value {
-    font-size: 28px;
-    font-weight: 700;
-    font-family: 'IBM Plex Mono', monospace;
-    line-height: 1;
-    margin-bottom: 4px;
-  }
-
-  .kpi-card.total .kpi-value { color: var(--accent-cyan); }
-  .kpi-card.red .kpi-value   { color: var(--risk-red); }
-  .kpi-card.orange .kpi-value{ color: var(--risk-orange); }
-  .kpi-card.yellow .kpi-value{ color: var(--risk-yellow); }
-  .kpi-card.green .kpi-value { color: var(--risk-green); }
-
-  .kpi-sub { font-size: 10px; color: var(--text-muted); }
-
-  /* ─── SECTION TITLE ──────────────────────────────────── */
-  .section-title {
-    display: flex;
-    align-items: center;
-    gap: 8px;
-    margin-bottom: 12px;
-  }
-
-  .section-title h2 {
-    font-size: 13px;
-    font-weight: 600;
-    color: var(--text-primary);
-    letter-spacing: 0.3px;
-  }
-
-  .section-title .badge {
-    font-size: 10px;
-    background: rgba(59,130,246,0.15);
-    color: var(--accent-blue);
-    border: 1px solid rgba(59,130,246,0.3);
-    padding: 2px 8px;
-    border-radius: 10px;
-    font-weight: 600;
-  }
-
-  /* ─── FILTER BAR ─────────────────────────────────────── */
-  .filter-bar {
-    display: flex;
-    gap: 8px;
-    margin-bottom: 14px;
-    flex-wrap: wrap;
-  }
-
-  .filter-btn {
-    padding: 5px 14px;
-    border-radius: 20px;
-    border: 1px solid var(--border);
-    background: transparent;
-    color: var(--text-secondary);
-    font-size: 11px;
-    font-weight: 500;
-    cursor: pointer;
-    font-family: 'IBM Plex Sans Thai', sans-serif;
-    transition: all 0.2s;
-  }
-
-  .filter-btn:hover { border-color: var(--accent-blue); color: var(--accent-blue); }
-  .filter-btn.active { background: var(--accent-blue); border-color: var(--accent-blue); color: white; }
-  .filter-btn.red.active   { background: var(--risk-red); border-color: var(--risk-red); }
-  .filter-btn.orange.active{ background: var(--risk-orange); border-color: var(--risk-orange); }
-  .filter-btn.yellow.active{ background: var(--risk-yellow); border-color: var(--risk-yellow); color: #000; }
-  .filter-btn.green.active { background: var(--risk-green); border-color: var(--risk-green); color: #000; }
-
-  /* ─── FLIGHT TABLE ───────────────────────────────────── */
-  .table-wrap {
-    background: var(--bg-card);
-    border: 1px solid var(--border);
-    border-radius: 12px;
-    overflow: hidden;
-  }
-
-  table {
-    width: 100%;
-    border-collapse: collapse;
-  }
-
-  thead th {
-    background: var(--bg-card2);
-    padding: 10px 12px;
-    text-align: left;
-    font-size: 10px;
-    font-weight: 600;
-    color: var(--text-muted);
-    text-transform: uppercase;
-    letter-spacing: 0.8px;
-    border-bottom: 1px solid var(--border);
-    white-space: nowrap;
-  }
-
-  tbody tr {
-    border-bottom: 1px solid rgba(30,45,82,0.5);
-    cursor: pointer;
-    transition: background 0.15s;
-  }
-
-  tbody tr:hover { background: rgba(59,130,246,0.06); }
-  tbody tr.selected { background: rgba(59,130,246,0.12) !important; border-left: 3px solid var(--accent-blue); }
-  tbody tr:last-child { border-bottom: none; }
-
-  tbody td {
-    padding: 9px 12px;
-    font-size: 12px;
-    color: var(--text-primary);
-    white-space: nowrap;
-  }
-
-  .flight-num {
-    font-family: 'IBM Plex Mono', monospace;
-    font-weight: 600;
-    color: var(--accent-cyan);
-    font-size: 12px;
-  }
-
-  .al-badge {
-    display: inline-block;
-    padding: 2px 7px;
-    border-radius: 4px;
-    font-size: 10px;
-    font-weight: 700;
-    background: rgba(59,130,246,0.15);
-    color: #93c5fd;
-  }
-
-  .time-cell {
-    font-family: 'IBM Plex Mono', monospace;
-    font-size: 11px;
-    color: var(--text-secondary);
-  }
-
-  .bay-cell {
-    font-family: 'IBM Plex Mono', monospace;
-    font-size: 11px;
-  }
-
-  .bay-remote { color: #fb923c; }
-  .bay-contact { color: #4ade80; }
-
-  /* ─── RISK SCORE CELL ────────────────────────────────── */
-  .risk-score {
-    display: inline-flex;
-    align-items: center;
-    gap: 6px;
-  }
-
-  .risk-num {
-    font-family: 'IBM Plex Mono', monospace;
-    font-size: 13px;
-    font-weight: 700;
-    min-width: 28px;
-  }
-
-  .risk-bar-wrap {
-    width: 50px;
-    height: 5px;
-    background: rgba(255,255,255,0.08);
-    border-radius: 3px;
-    overflow: hidden;
-  }
-
-  .risk-bar {
-    height: 100%;
-    border-radius: 3px;
-    transition: width 0.5s;
-  }
-
-  .risk-tag {
-    display: inline-block;
-    padding: 2px 8px;
-    border-radius: 10px;
-    font-size: 9px;
-    font-weight: 700;
-    letter-spacing: 0.5px;
-    text-transform: uppercase;
-  }
-
-  .risk-high   { --c: var(--risk-red);    --bg: var(--risk-red-bg); }
-  .risk-mh     { --c: var(--risk-orange); --bg: var(--risk-orange-bg); }
-  .risk-ml     { --c: var(--risk-yellow); --bg: var(--risk-yellow-bg); }
-  .risk-low    { --c: var(--risk-green);  --bg: var(--risk-green-bg); }
-
-  .risk-high .risk-num, .risk-high .risk-bar { color: var(--risk-red); background: var(--risk-red); }
-  .risk-mh .risk-num,   .risk-mh .risk-bar  { color: var(--risk-orange); background: var(--risk-orange); }
-  .risk-ml .risk-num,   .risk-ml .risk-bar  { color: var(--risk-yellow); background: var(--risk-yellow); }
-  .risk-low .risk-num,  .risk-low .risk-bar { color: var(--risk-green); background: var(--risk-green); }
-
-  .risk-tag { background: var(--bg); color: var(--c); }
-
-  /* ─── SIDE PANEL ─────────────────────────────────────── */
-  .side-section {
-    margin-bottom: 20px;
-  }
-
-  .side-section-title {
-    font-size: 10px;
-    font-weight: 700;
-    color: var(--text-muted);
-    text-transform: uppercase;
-    letter-spacing: 1px;
-    margin-bottom: 10px;
-    padding-bottom: 6px;
-    border-bottom: 1px solid var(--border);
-  }
-
-  /* Weather widget */
-  .weather-card {
-    background: var(--bg-card);
-    border: 1px solid var(--border);
-    border-radius: 10px;
-    padding: 14px;
-    display: grid;
-    grid-template-columns: 1fr auto;
-    gap: 10px;
-    align-items: center;
-    margin-bottom: 10px;
-  }
-
-  .weather-main { font-size: 12px; color: var(--text-secondary); line-height: 1.8; }
-  .weather-main strong { color: var(--text-primary); font-size: 13px; }
-  .weather-icon { font-size: 36px; }
-
-  .weather-metrics {
-    display: grid;
-    grid-template-columns: 1fr 1fr;
-    gap: 6px;
-  }
-
-  .w-metric {
-    background: var(--bg-card);
-    border: 1px solid var(--border);
-    border-radius: 8px;
-    padding: 8px 10px;
-    text-align: center;
-  }
-
-  .w-metric-val {
-    font-size: 16px;
-    font-weight: 700;
-    font-family: 'IBM Plex Mono', monospace;
-    color: var(--accent-cyan);
-  }
-
-  .w-metric-lbl { font-size: 9px; color: var(--text-muted); margin-top: 2px; text-transform: uppercase; }
-
-  /* Traffic chart */
-  .traffic-chart {
-    background: var(--bg-card);
-    border: 1px solid var(--border);
-    border-radius: 10px;
-    padding: 12px;
-    margin-bottom: 10px;
-  }
-
-  .traffic-bars {
-    display: flex;
-    align-items: flex-end;
-    gap: 3px;
-    height: 60px;
-    margin-bottom: 4px;
-  }
-
-  .t-bar-wrap {
-    flex: 1;
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    gap: 2px;
-    height: 100%;
-    justify-content: flex-end;
-  }
-
-  .t-bar {
-    width: 100%;
-    border-radius: 3px 3px 0 0;
-    transition: all 0.5s;
-  }
-
-  .t-label { font-size: 8px; color: var(--text-muted); }
-
-  /* Flight detail */
-  .detail-card {
-    background: var(--bg-card);
-    border: 1px solid var(--border);
-    border-radius: 10px;
-    padding: 14px;
-  }
-
-  .detail-header {
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    margin-bottom: 12px;
-  }
-
-  .detail-flight {
-    font-family: 'IBM Plex Mono', monospace;
-    font-size: 18px;
-    font-weight: 700;
-    color: var(--accent-cyan);
-  }
-
-  .detail-risk-circle {
-    width: 56px; height: 56px;
-    border-radius: 50%;
-    display: flex; align-items: center; justify-content: center;
-    flex-direction: column;
-    font-family: 'IBM Plex Mono', monospace;
-    font-weight: 700;
-    font-size: 16px;
-    line-height: 1.1;
-    border: 3px solid;
-  }
-
-  .detail-risk-label { font-size: 8px; font-family: 'IBM Plex Sans Thai', sans-serif; font-weight: 400; }
-
-  .detail-info-grid {
-    display: grid;
-    grid-template-columns: 1fr 1fr;
-    gap: 8px;
-    margin-bottom: 12px;
-  }
-
-  .d-info {
-    background: var(--bg-secondary);
-    border-radius: 6px;
-    padding: 7px 10px;
-  }
-
-  .d-info-lbl { font-size: 9px; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 2px; }
-  .d-info-val { font-size: 12px; font-weight: 600; color: var(--text-primary); font-family: 'IBM Plex Mono', monospace; }
-
-  .factor-title { font-size: 10px; font-weight: 700; color: var(--text-muted); text-transform: uppercase; margin-bottom: 7px; }
-
-  .factor-list { display: flex; flex-direction: column; gap: 5px; }
-
-  .factor-item {
-    display: flex;
-    align-items: center;
-    gap: 7px;
-    background: var(--bg-secondary);
-    border-radius: 6px;
-    padding: 6px 10px;
-    font-size: 11px;
-    color: var(--text-primary);
-  }
-
-  .factor-icon { font-size: 12px; }
-
-  .recommendation {
-    margin-top: 12px;
-    background: rgba(59,130,246,0.08);
-    border: 1px solid rgba(59,130,246,0.2);
-    border-radius: 8px;
-    padding: 10px 12px;
-  }
-
-  .rec-title {
-    font-size: 10px;
-    font-weight: 700;
-    color: var(--accent-blue);
-    text-transform: uppercase;
-    letter-spacing: 0.5px;
-    margin-bottom: 7px;
-    display: flex;
-    align-items: center;
-    gap: 5px;
-  }
-
-  .rec-item {
-    font-size: 11px;
-    color: var(--text-secondary);
-    margin-bottom: 4px;
-    padding-left: 14px;
-    position: relative;
-    line-height: 1.5;
-  }
-
-  .rec-item::before {
-    content: '›';
-    position: absolute;
-    left: 3px;
-    color: var(--accent-blue);
-    font-weight: 700;
-  }
-
-  .empty-detail {
-    text-align: center;
-    padding: 30px 0;
-    color: var(--text-muted);
-    font-size: 12px;
-  }
-
-  .empty-detail .icon { font-size: 32px; margin-bottom: 8px; }
-
-  /* AI pulse glow for high risk */
-  @keyframes glow-red {
-    0%,100% { box-shadow: 0 0 8px rgba(239,68,68,0.3); }
-    50%      { box-shadow: 0 0 20px rgba(239,68,68,0.6); }
-  }
-
-  tbody tr[data-risk="high"] { animation: glow-red 2s infinite; }
-
-  /* Scrollbar */
-  ::-webkit-scrollbar { width: 5px; }
-  ::-webkit-scrollbar-track { background: transparent; }
-  ::-webkit-scrollbar-thumb { background: var(--border-light); border-radius: 3px; }
-
-  /* Factor score bar */
-  .factor-bar-row {
-    display: flex;
-    align-items: center;
-    gap: 8px;
-    margin-bottom: 5px;
-    font-size: 10px;
-    color: var(--text-secondary);
-  }
-
-  .factor-bar-lbl { width: 90px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-  .factor-bar-track { flex: 1; height: 5px; background: rgba(255,255,255,0.07); border-radius: 3px; }
-  .factor-bar-fill { height: 100%; border-radius: 3px; }
-  .factor-bar-val { width: 28px; text-align: right; font-family: 'IBM Plex Mono', monospace; font-size: 10px; }
-
-  /* Gauge ring */
-  .gauge-wrap { display: flex; justify-content: center; margin: 10px 0 4px; }
-  .gauge-svg { transform: rotate(-90deg); }
+}
 </style>
 </head>
 <body>
 
 <!-- HEADER -->
-<div class="header">
-  <div class="header-left">
-    <div class="logo-icon">✈</div>
-    <div class="header-title">
-      <h1>AI Flight Risk Index (AFRI)</h1>
-      <p>Predictive Delay &amp; Operational Risk Dashboard · BKK/VTBD A-CDM</p>
+<header class="header">
+  <div class="hdr-left">
+    <div class="logo">✈</div>
+    <div class="hdr-title">
+      <h1>AI Flight Risk Index</h1>
+      <p>BKK A-CDM · 10 ก.ค. 2569</p>
     </div>
   </div>
-  <div class="header-right">
-    <div class="live-badge"><div class="live-dot"></div> LIVE</div>
-    <div>
-      <div class="header-clock" id="clock">--:--:--</div>
-      <div class="header-date">10 กรกฎาคม 2569 · BKK Local</div>
-    </div>
+  <div class="hdr-right">
+    <div class="live-pill"><div class="live-dot"></div>LIVE</div>
+    <div class="clock" id="clock">--:--</div>
   </div>
+</header>
+
+<!-- DESKTOP LAYOUT WRAPPER -->
+<div class="desktop-layout">
+
+<!-- ── PAGE: SUMMARY ──────────────────────────── -->
+<div class="page page-summary active" id="page-summary">
+
+  <div class="kpi-grid" id="kpiGrid"></div>
+
+  <div class="sec-hdr">
+    <h2>📊 Risk Distribution</h2>
+  </div>
+
+  <!-- Mini bar chart -->
+  <div style="background:var(--card);border:1px solid var(--border);border-radius:var(--radius);padding:16px;margin-bottom:16px;">
+    <div id="distChart" style="display:flex;gap:6px;align-items:flex-end;height:80px;margin-bottom:8px;"></div>
+    <div id="distLbls" style="display:flex;gap:6px;"></div>
+  </div>
+
+  <!-- Traffic -->
+  <div class="traffic-section">
+    <div class="fs-title">🚦 Traffic Density ต่อชั่วโมง</div>
+    <div class="tbar-chart" id="trafficBars"></div>
+    <div id="trafficLbls" style="display:flex;gap:4px;"></div>
+  </div>
+
 </div>
 
-<!-- LAYOUT -->
-<div class="layout">
+<!-- ── PAGE: FLIGHTS ───────────────────────────── -->
+<div class="page page-flights" id="page-flights">
 
-  <!-- MAIN PANEL -->
-  <div class="main-panel">
+  <div class="sec-hdr">
+    <h2>✈ เที่ยวบิน</h2>
+    <span class="sec-badge" id="flightBadge">0</span>
+  </div>
 
-    <!-- KPI Row -->
-    <div class="kpi-row" id="kpiRow"></div>
+  <div class="pill-row">
+    <button class="pill active" onclick="setFilter('all',this)">ทั้งหมด</button>
+    <button class="pill pr" onclick="setFilter('high',this)">🔴 High Risk</button>
+    <button class="pill po" onclick="setFilter('mh',this)">🟠 ควรติดตาม</button>
+    <button class="pill py" onclick="setFilter('ml',this)">🟡 เฝ้าระวัง</button>
+    <button class="pill pg" onclick="setFilter('low',this)">🟢 ปกติ</button>
+  </div>
 
-    <!-- Risk Bar Chart -->
-    <div class="section-title">
-      <h2>⚡ Risk Distribution</h2>
-      <span class="badge" id="totalBadge">0 เที่ยวบิน</span>
+  <div class="flight-list" id="flightList"></div>
+</div>
+
+<!-- ── PAGE: WEATHER ───────────────────────────── -->
+<div class="page page-weather" id="page-weather">
+
+  <div class="weather-hero">
+    <div>
+      <div style="font-size:11px;color:#93c5fd;margin-bottom:4px;font-weight:600;">VTBS · สุวรรณภูมิ</div>
+      <div class="w-main-temp">31°C</div>
+      <div class="w-main-cond">⛈ ฝนตกปานกลาง · CB</div>
+      <div style="font-size:11px;color:var(--muted);margin-top:6px;">Wind 160° / 12 kt Gust 22 kt</div>
     </div>
+    <div class="w-icon">⛈</div>
+  </div>
 
-    <div class="filter-bar" id="filterBar">
-      <button class="filter-btn active" data-filter="all" onclick="setFilter('all',this)">ทั้งหมด</button>
-      <button class="filter-btn red"    data-filter="high"   onclick="setFilter('high',this)">🔴 High Risk (80–100)</button>
-      <button class="filter-btn orange" data-filter="mh"     onclick="setFilter('mh',this)">🟠 ควรติดตาม (60–79)</button>
-      <button class="filter-btn yellow" data-filter="ml"     onclick="setFilter('ml',this)">🟡 เฝ้าระวัง (30–59)</button>
-      <button class="filter-btn green"  data-filter="low"    onclick="setFilter('low',this)">🟢 ปกติ (&lt;30)</button>
-    </div>
+  <div class="w-grid">
+    <div class="w-cell"><div class="w-val">4.8</div><div class="w-lbl">Visibility (km)</div></div>
+    <div class="w-cell"><div class="w-val">22</div><div class="w-lbl">Wind Gust (kt)</div></div>
+    <div class="w-cell"><div class="w-val">78%</div><div class="w-lbl">Humidity</div></div>
+    <div class="w-cell"><div class="w-val">CB</div><div class="w-lbl">Cloud Type</div></div>
+    <div class="w-cell"><div class="w-val">QNH</div><div class="w-lbl" style="font-size:9px">1008 hPa</div></div>
+    <div class="w-cell"><div class="w-val">IFR</div><div class="w-lbl">Conditions</div></div>
+  </div>
 
-    <div class="table-wrap">
-      <table>
-        <thead>
-          <tr>
-            <th>Risk Score</th>
-            <th>เที่ยวบิน</th>
-            <th>สายการบิน</th>
-            <th>อากาศยาน</th>
-            <th>Bay</th>
-            <th>SOBT</th>
-            <th>EOBT</th>
-            <th>ปลายทาง</th>
-            <th>ปัจจัยเสี่ยง</th>
-          </tr>
-        </thead>
-        <tbody id="flightTableBody"></tbody>
-      </table>
-    </div>
+  <div class="impact-banner">⚠️ สภาพอากาศมีผลต่อความเสี่ยง — เพิ่ม Risk Score 10–20 คะแนนสำหรับเที่ยวบิน Remote Stand</div>
 
-  </div><!-- /main-panel -->
+  <div class="traffic-section" style="margin-top:12px;">
+    <div class="fs-title">🚦 Traffic ต่อชั่วโมง</div>
+    <div class="tbar-chart" id="trafficBars2"></div>
+    <div id="trafficLbls2" style="display:flex;gap:4px;margin-top:6px;"></div>
+  </div>
 
-  <!-- SIDE PANEL -->
-  <div class="side-panel">
+</div>
 
-    <!-- Weather -->
-    <div class="side-section">
-      <div class="side-section-title">🌤 สภาพอากาศ · VTBS</div>
-      <div class="weather-card">
-        <div class="weather-main">
-          <strong>ฝนตกปานกลาง</strong><br>
-          อุณหภูมิ 31°C · ความชื้น 78%<br>
-          Visibility 4,800 m (IFR)<br>
-          Wind: 160° / 12 kt Gust 22 kt
-        </div>
-        <div class="weather-icon">⛈</div>
-      </div>
-      <div class="weather-metrics">
-        <div class="w-metric">
-          <div class="w-metric-val">4.8</div>
-          <div class="w-metric-lbl">Visibility (km)</div>
-        </div>
-        <div class="w-metric">
-          <div class="w-metric-val">22</div>
-          <div class="w-metric-lbl">Wind Gust (kt)</div>
-        </div>
-        <div class="w-metric">
-          <div class="w-metric-val">78%</div>
-          <div class="w-metric-lbl">Humidity</div>
-        </div>
-        <div class="w-metric">
-          <div class="w-metric-val">CB</div>
-          <div class="w-metric-lbl">Cloud Type</div>
-        </div>
-      </div>
-    </div>
+<!-- ── PAGE: DETAIL ────────────────────────────── -->
+<div class="page page-detail" id="page-detail">
+  <button class="back-btn" onclick="goBack()">← กลับ</button>
+  <div id="detailContent"></div>
+</div>
 
-    <!-- Traffic Density -->
-    <div class="side-section">
-      <div class="side-section-title">📊 Traffic Density (ต่อชั่วโมง)</div>
-      <div class="traffic-chart">
-        <div class="traffic-bars" id="trafficBars"></div>
-        <div id="trafficLabels" style="display:flex;gap:3px;"></div>
-      </div>
-    </div>
+</div><!-- /desktop-layout -->
 
-    <!-- Flight Detail -->
-    <div class="side-section">
-      <div class="side-section-title">🤖 AI Analysis · รายละเอียดเที่ยวบิน</div>
-      <div id="flightDetail">
-        <div class="empty-detail">
-          <div class="icon">✈️</div>
-          <div>คลิกเลือกเที่ยวบิน<br>เพื่อดู AI Analysis</div>
-        </div>
-      </div>
-    </div>
+<!-- ── DESKTOP DETAIL OVERLAY ─────────────────── -->
+<div class="desktop-detail-overlay" id="desktopOverlay">
+  <button class="close-overlay" onclick="closeOverlay()">✕ ปิด</button>
+  <div id="overlayContent"></div>
+</div>
 
-  </div><!-- /side-panel -->
-
-</div><!-- /layout -->
+<!-- ── BOTTOM TAB NAV ──────────────────────────── -->
+<nav class="tab-nav">
+  <button class="tab-btn active" id="tab-summary" onclick="switchTab('summary')">
+    <span class="tab-icon">📊</span><span>ภาพรวม</span>
+  </button>
+  <button class="tab-btn" id="tab-flights" onclick="switchTab('flights')">
+    <span class="tab-icon">✈</span><span>เที่ยวบิน</span>
+  </button>
+  <button class="tab-btn" id="tab-weather" onclick="switchTab('weather')">
+    <span class="tab-icon">🌤</span><span>อากาศ</span>
+  </button>
+</nav>
 
 <script>
 const FLIGHTS = [{"al": "TG", "flight": "TG 203", "ac": "32Q", "bay": "110R", "gate": "B2B", "sobt": "08:05/10", "eobt": "08:05/10", "aobt": "08:12/10", "atot": "08:30/10", "dest": "HKT", "status": "OPR", "nature": "05", "risk_score": 80, "tobt_changes": 4, "tsat_shifts": 2, "is_remote": true, "is_peak": true, "otp": 68, "eobt_delay": 0, "weather": 18, "factors": ["TOBT เปลี่ยน 4 ครั้ง", "TSAT เลื่อน 2 ครั้ง", "Bay Remote", "ช่วง Peak Hour", "OTP ต่ำ (68%)", "สภาพอากาศ"]}, {"al": "TG", "flight": "TG 960", "ac": "359", "bay": "C1", "gate": "C1", "sobt": "00:30/10", "eobt": "00:30/10", "aobt": "00:42/10", "atot": "00:56/10", "dest": "ARN", "status": "OPR", "nature": "01", "risk_score": 78, "tobt_changes": 5, "tsat_shifts": 3, "is_remote": true, "is_peak": false, "otp": 68, "eobt_delay": 0, "weather": 17, "factors": ["TOBT เปลี่ยน 5 ครั้ง", "TSAT เลื่อน 3 ครั้ง", "Bay Remote", "OTP ต่ำ (68%)", "สภาพอากาศ"]}, {"al": "TG", "flight": "TG 930", "ac": "77W", "bay": "C8", "gate": "C8", "sobt": "00:05/10", "eobt": "00:05/10", "aobt": "00:09/10", "atot": "00:27/10", "dest": "CDG", "status": "OPR", "nature": "01", "risk_score": 77, "tobt_changes": 5, "tsat_shifts": 2, "is_remote": true, "is_peak": false, "otp": 68, "eobt_delay": 0, "weather": 20, "factors": ["TOBT เปลี่ยน 5 ครั้ง", "TSAT เลื่อน 2 ครั้ง", "Bay Remote", "OTP ต่ำ (68%)", "สภาพอากาศ"]}, {"al": "TG", "flight": "TG 560", "ac": "32A", "bay": "114R", "gate": "C2A", "sobt": "07:45/10", "eobt": "07:45/10", "aobt": "07:45/10", "atot": "08:05/10", "dest": "HAN", "status": "OPR", "nature": "01", "risk_score": 74, "tobt_changes": 5, "tsat_shifts": 2, "is_remote": true, "is_peak": true, "otp": 68, "eobt_delay": 0, "weather": 7, "factors": ["TOBT เปลี่ยน 5 ครั้ง", "TSAT เลื่อน 2 ครั้ง", "Bay Remote", "ช่วง Peak Hour", "OTP ต่ำ (68%)"]}, {"al": "TG", "flight": "TG 339", "ac": "320", "bay": "A2", "gate": "C1A", "sobt": "23:35/09", "eobt": "23:35/09", "aobt": "00:07/10", "atot": "00:30/10", "dest": "DAC", "status": "OPR", "nature": "01", "risk_score": 73, "tobt_changes": 5, "tsat_shifts": 3, "is_remote": true, "is_peak": false, "otp": 68, "eobt_delay": 0, "weather": 12, "factors": ["TOBT เปลี่ยน 5 ครั้ง", "TSAT เลื่อน 3 ครั้ง", "Bay Remote", "OTP ต่ำ (68%)"]}, {"al": "3S", "flight": "3S 542", "ac": "77X", "bay": "518", "gate": "", "sobt": "00:10/10", "eobt": "00:10/10", "aobt": "00:02/10", "atot": "00:11/10", "dest": "HKG", "status": "OPR", "nature": "08", "risk_score": 73, "tobt_changes": 5, "tsat_shifts": 2, "is_remote": true, "is_peak": false, "otp": 75, "eobt_delay": 0, "weather": 18, "factors": ["TOBT เปลี่ยน 5 ครั้ง", "TSAT เลื่อน 2 ครั้ง", "Bay Remote", "สภาพอากาศ"]}, {"al": "FM", "flight": "FM 840", "ac": "7M8", "bay": "D1", "gate": "D1", "sobt": "21:55/09", "eobt": "00:50/10", "aobt": "01:04/10", "atot": "01:26/10", "dest": "PVG", "status": "OPR", "nature": "01", "risk_score": 70, "tobt_changes": 3, "tsat_shifts": 3, "is_remote": true, "is_peak": false, "otp": 75, "eobt_delay": 28, "weather": 7, "factors": ["TOBT เปลี่ยน 3 ครั้ง", "TSAT เลื่อน 3 ครั้ง", "Bay Remote", "EOBT เลื่อน +28 นาที"]}, {"al": "VZ", "flight": "VZ 720", "ac": "32A", "bay": "107R", "gate": "D1A", "sobt": "08:40/10", "eobt": "08:40/10", "aobt": "08:34/10", "atot": "08:45/10", "dest": "KTI", "status": "OPR", "nature": "01", "risk_score": 68, "tobt_changes": 5, "tsat_shifts": 1, "is_remote": true, "is_peak": true, "otp": 82, "eobt_delay": 0, "weather": 9, "factors": ["TOBT เปลี่ยน 5 ครั้ง", "Bay Remote", "ช่วง Peak Hour"]}, {"al": "TG", "flight": "TG 682", "ac": "77W", "bay": "C6", "gate": "C6", "sobt": "22:45/10", "eobt": "22:45/10", "aobt": null, "atot": null, "dest": "HND", "status": "OPR", "nature": "01", "risk_score": 67, "tobt_changes": 5, "tsat_shifts": 0, "is_remote": true, "is_peak": false, "otp": 68, "eobt_delay": 0, "weather": 18, "factors": ["TOBT เปลี่ยน 5 ครั้ง", "Bay Remote", "OTP ต่ำ (68%)", "สภาพอากาศ"]}, {"al": "QR", "flight": "QR 829", "ac": "359", "bay": "S117", "gate": "S117A", "sobt": "03:00/10", "eobt": "03:00/10", "aobt": "03:44/10", "atot": "03:59/10", "dest": "DOH", "status": "OPR", "nature": "01", "risk_score": 66, "tobt_changes": 4, "tsat_shifts": 2, "is_remote": true, "is_peak": false, "otp": 88, "eobt_delay": 0, "weather": 20, "factors": ["TOBT เปลี่ยน 4 ครั้ง", "TSAT เลื่อน 2 ครั้ง", "Bay Remote", "สภาพอากาศ"]}, {"al": "PG", "flight": "PG 107", "ac": "319", "bay": "102R", "gate": "A8", "sobt": "07:10/10", "eobt": "07:10/10", "aobt": "07:09/10", "atot": "07:18/10", "dest": "USM", "status": "OPR", "nature": "05", "risk_score": 65, "tobt_changes": 5, "tsat_shifts": 2, "is_remote": true, "is_peak": true, "otp": 91, "eobt_delay": 0, "weather": 5, "factors": ["TOBT เปลี่ยน 5 ครั้ง", "TSAT เลื่อน 2 ครั้ง", "Bay Remote", "ช่วง Peak Hour"]}, {"al": "PG", "flight": "PG 903", "ac": "ATR", "bay": "111L", "gate": "E1A", "sobt": "07:40/10", "eobt": "07:40/10", "aobt": "07:33/10", "atot": "07:40/10", "dest": "SAI", "status": "OPR", "nature": "01", "risk_score": 64, "tobt_changes": 3, "tsat_shifts": 2, "is_remote": true, "is_peak": true, "otp": 91, "eobt_delay": 0, "weather": 14, "factors": ["TOBT เปลี่ยน 3 ครั้ง", "TSAT เลื่อน 2 ครั้ง", "Bay Remote", "ช่วง Peak Hour"]}, {"al": "TG", "flight": "TG 662", "ac": "772", "bay": "S104", "gate": "S104", "sobt": "00:30/10", "eobt": "00:30/10", "aobt": "00:27/10", "atot": "00:44/10", "dest": "PVG", "status": "OPR", "nature": "01", "risk_score": 63, "tobt_changes": 5, "tsat_shifts": 2, "is_remote": true, "is_peak": false, "otp": 68, "eobt_delay": 0, "weather": 6, "factors": ["TOBT เปลี่ยน 5 ครั้ง", "TSAT เลื่อน 2 ครั้ง", "Bay Remote", "OTP ต่ำ (68%)"]}, {"al": "KB", "flight": "KB 141", "ac": "32D", "bay": "F1", "gate": "F1", "sobt": "06:00/10", "eobt": "06:00/10", "aobt": "05:52/10", "atot": "06:08/10", "dest": "GAU", "status": "OPR", "nature": "01", "risk_score": 63, "tobt_changes": 5, "tsat_shifts": 3, "is_remote": true, "is_peak": false, "otp": 75, "eobt_delay": 0, "weather": 4, "factors": ["TOBT เปลี่ยน 5 ครั้ง", "TSAT เลื่อน 3 ครั้ง", "Bay Remote"]}, {"al": "TG", "flight": "TG 970", "ac": "77W", "bay": "C5", "gate": "C5", "sobt": "01:05/10", "eobt": "01:05/10", "aobt": "01:04/10", "atot": "01:24/10", "dest": "ZRH", "status": "OPR", "nature": "01", "risk_score": 61, "tobt_changes": 4, "tsat_shifts": 0, "is_remote": true, "is_peak": false, "otp": 68, "eobt_delay": 0, "weather": 17, "factors": ["TOBT เปลี่ยน 4 ครั้ง", "Bay Remote", "OTP ต่ำ (68%)", "สภาพอากาศ"]}, {"al": "NX", "flight": "NX 995", "ac": "32B", "bay": "S125", "gate": "S125", "sobt": "10:35/10", "eobt": "10:35/10", "aobt": "10:42/10", "atot": "10:56/10", "dest": "MFM", "status": "OPR", "nature": "01", "risk_score": 61, "tobt_changes": 5, "tsat_shifts": 1, "is_remote": true, "is_peak": false, "otp": 75, "eobt_delay": 0, "weather": 10, "factors": ["TOBT เปลี่ยน 5 ครั้ง", "Bay Remote"]}, {"al": "TG", "flight": "TG 954", "ac": "359", "bay": "S103", "gate": "S103", "sobt": "00:05/10", "eobt": "00:05/10", "aobt": "00:08/10", "atot": "00:25/10", "dest": "OSL", "status": "OPR", "nature": "01", "risk_score": 58, "tobt_changes": 5, "tsat_shifts": 1, "is_remote": true, "is_peak": false, "otp": 68, "eobt_delay": 0, "weather": 5, "factors": ["TOBT เปลี่ยน 5 ครั้ง", "Bay Remote", "OTP ต่ำ (68%)"]}, {"al": "VZ", "flight": "VZ 968", "ac": "7M8", "bay": "128R", "gate": "C1A", "sobt": "11:35/10", "eobt": "11:35/10", "aobt": "11:34/10", "atot": "11:48/10", "dest": "CXR", "status": "OPR", "nature": "01", "risk_score": 55, "tobt_changes": 3, "tsat_shifts": 3, "is_remote": true, "is_peak": false, "otp": 82, "eobt_delay": 0, "weather": 8, "factors": ["TOBT เปลี่ยน 3 ครั้ง", "TSAT เลื่อน 3 ครั้ง", "Bay Remote"]}, {"al": "TG", "flight": "TG 415", "ac": "333", "bay": "C9", "gate": "C9", "sobt": "09:05/10", "eobt": "09:05/10", "aobt": "09:18/10", "atot": "09:33/10", "dest": "KUL", "status": "OPR", "nature": "01", "risk_score": 54, "tobt_changes": 2, "tsat_shifts": 1, "is_remote": true, "is_peak": true, "otp": 68, "eobt_delay": 0, "weather": 6, "factors": ["Bay Remote", "ช่วง Peak Hour", "OTP ต่ำ (68%)"]}, {"al": "VZ", "flight": "VZ 320", "ac": "7M8", "bay": "302", "gate": "B8", "sobt": "07:05/10", "eobt": "07:05/10", "aobt": "07:02/10", "atot": "07:15/10", "dest": "HDY", "status": "OPR", "nature": "05", "risk_score": 52, "tobt_changes": 0, "tsat_shifts": 1, "is_remote": true, "is_peak": true, "otp": 82, "eobt_delay": 0, "weather": 18, "factors": ["Bay Remote", "ช่วง Peak Hour", "สภาพอากาศ"]}, {"al": "TG", "flight": "TG 670", "ac": "789", "bay": "C7", "gate": "C7", "sobt": "23:45/09", "eobt": "23:45/09", "aobt": "00:12/10", "atot": "00:37/10", "dest": "CTS", "status": "OPR", "nature": "01", "risk_score": 51, "tobt_changes": 1, "tsat_shifts": 3, "is_remote": true, "is_peak": false, "otp": 68, "eobt_delay": 0, "weather": 10, "factors": ["TSAT เลื่อน 3 ครั้ง", "Bay Remote", "OTP ต่ำ (68%)"]}, {"al": "PG", "flight": "PG 271", "ac": "320", "bay": "A5", "gate": "A5", "sobt": "08:05/10", "eobt": "08:05/10", "aobt": "08:07/10", "atot": "08:22/10", "dest": "HKT", "status": "OPR", "nature": "05", "risk_score": 51, "tobt_changes": 2, "tsat_shifts": 2, "is_remote": true, "is_peak": true, "otp": 91, "eobt_delay": 0, "weather": 6, "factors": ["TSAT เลื่อน 2 ครั้ง", "Bay Remote", "ช่วง Peak Hour"]}, {"al": "TG", "flight": "TG 622", "ac": "333", "bay": "C6", "gate": "C6", "sobt": "23:59/09", "eobt": "23:59/09", "aobt": "00:14/10", "atot": "00:32/10", "dest": "KIX", "status": "OPR", "nature": "01", "risk_score": 49, "tobt_changes": 5, "tsat_shifts": 0, "is_remote": true, "is_peak": false, "otp": 68, "eobt_delay": 0, "weather": 0, "factors": ["TOBT เปลี่ยน 5 ครั้ง", "Bay Remote", "OTP ต่ำ (68%)"]}, {"al": "LY", "flight": "LY 082", "ac": "789", "bay": "E9", "gate": "E9", "sobt": "23:55/09", "eobt": "23:55/09", "aobt": "00:02/10", "atot": "00:13/10", "dest": "TLV", "status": "OPR", "nature": "01", "risk_score": 49, "tobt_changes": 3, "tsat_shifts": 0, "is_remote": true, "is_peak": false, "otp": 72, "eobt_delay": 0, "weather": 11, "factors": ["TOBT เปลี่ยน 3 ครั้ง", "Bay Remote", "OTP ต่ำ (72%)"]}, {"al": "TG", "flight": "TG 934", "ac": "789", "bay": "C9", "gate": "C9", "sobt": "00:05/10", "eobt": "00:05/10", "aobt": "00:19/10", "atot": "00:39/10", "dest": "BRU", "status": "OPR", "nature": "01", "risk_score": 48, "tobt_changes": 1, "tsat_shifts": 3, "is_remote": true, "is_peak": false, "otp": 68, "eobt_delay": 0, "weather": 7, "factors": ["TSAT เลื่อน 3 ครั้ง", "Bay Remote", "OTP ต่ำ (68%)"]}, {"al": "TG", "flight": "TG 249", "ac": "32Q", "bay": "111R", "gate": "B7", "sobt": "18:25/10", "eobt": "18:25/10", "aobt": null, "atot": null, "dest": "KBV", "status": "OPR", "nature": "05", "risk_score": 48, "tobt_changes": 0, "tsat_shifts": 3, "is_remote": true, "is_peak": true, "otp": 68, "eobt_delay": 0, "weather": 2, "factors": ["TSAT เลื่อน 3 ครั้ง", "Bay Remote", "ช่วง Peak Hour", "OTP ต่ำ (68%)"]}, {"al": "PG", "flight": "PG 261", "ac": "319", "bay": "A4", "gate": "A4", "sobt": "07:10/10", "eobt": "07:10/10", "aobt": "07:38/10", "atot": "07:51/10", "dest": "KBV", "status": "OPR", "nature": "05", "risk_score": 48, "tobt_changes": 2, "tsat_shifts": 1, "is_remote": true, "is_peak": true, "otp": 91, "eobt_delay": 0, "weather": 7, "factors": ["Bay Remote", "ช่วง Peak Hour"]}, {"al": "TG", "flight": "TG 644", "ac": "788", "bay": "S105", "gate": "S105", "sobt": "00:05/10", "eobt": "00:05/10", "aobt": "00:14/10", "atot": "00:34/10", "dest": "NGO", "status": "OPR", "nature": "01", "risk_score": 47, "tobt_changes": 3, "tsat_shifts": 2, "is_remote": true, "is_peak": false, "otp": 68, "eobt_delay": 0, "weather": 0, "factors": ["TOBT เปลี่ยน 3 ครั้ง", "TSAT เลื่อน 2 ครั้ง", "Bay Remote", "OTP ต่ำ (68%)"]}, {"al": "PG", "flight": "PG 109", "ac": "ATR", "bay": "112L", "gate": "A9", "sobt": "06:25/10", "eobt": "06:25/10", "aobt": "06:25/10", "atot": "06:32/10", "dest": "USM", "status": "OPR", "nature": "05", "risk_score": 47, "tobt_changes": 2, "tsat_shifts": 3, "is_remote": true, "is_peak": false, "otp": 91, "eobt_delay": 0, "weather": 8, "factors": ["TSAT เลื่อน 3 ครั้ง", "Bay Remote"]}, {"al": "PG", "flight": "PG 215", "ac": "319", "bay": "104R", "gate": "A8", "sobt": "08:00/10", "eobt": "08:00/10", "aobt": "07:52/10", "atot": "08:08/10", "dest": "CNX", "status": "OPR", "nature": "05", "risk_score": 46, "tobt_changes": 1, "tsat_shifts": 3, "is_remote": true, "is_peak": true, "otp": 91, "eobt_delay": 0, "weather": 2, "factors": ["TSAT เลื่อน 3 ครั้ง", "Bay Remote", "ช่วง Peak Hour"]}, {"al": "FM", "flight": "FM 854", "ac": "73H", "bay": "D1", "gate": "D1", "sobt": "11:50/10", "eobt": "11:50/10", "aobt": "11:40/10", "atot": "11:55/10", "dest": "PVG", "status": "OPR", "nature": "01", "risk_score": 43, "tobt_changes": 0, "tsat_shifts": 1, "is_remote": true, "is_peak": false, "otp": 75, "eobt_delay": 0, "weather": 17, "factors": ["Bay Remote", "สภาพอากาศ"]}, {"al": "VZ", "flight": "VZ 760", "ac": "320", "bay": "103R", "gate": "C2A", "sobt": "21:05/10", "eobt": "21:05/10", "aobt": null, "atot": null, "dest": "BOM", "status": "OPR", "nature": "01", "risk_score": 39, "tobt_changes": 2, "tsat_shifts": 2, "is_remote": true, "is_peak": false, "otp": 82, "eobt_delay": 0, "weather": 1, "factors": ["TSAT เลื่อน 2 ครั้ง", "Bay Remote"]}, {"al": "TG", "flight": "TG 102", "ac": "32A", "bay": "106R", "gate": "B7", "sobt": "07:25/10", "eobt": "07:25/10", "aobt": "07:29/10", "atot": "07:38/10", "dest": "CNX", "status": "OPR", "nature": "05", "risk_score": 38, "tobt_changes": 0, "tsat_shifts": 0, "is_remote": true, "is_peak": true, "otp": 68, "eobt_delay": 0, "weather": 4, "factors": ["Bay Remote", "ช่วง Peak Hour", "OTP ต่ำ (68%)"]}, {"al": "TG", "flight": "TG 950", "ac": "77W", "bay": "C2", "gate": "C2", "sobt": "01:10/10", "eobt": "01:10/10", "aobt": "01:15/10", "atot": "01:32/10", "dest": "CPH", "status": "OPR", "nature": "01", "risk_score": 36, "tobt_changes": 1, "tsat_shifts": 1, "is_remote": true, "is_peak": false, "otp": 68, "eobt_delay": 0, "weather": 3, "factors": ["Bay Remote", "OTP ต่ำ (68%)"]}, {"al": "TG", "flight": "TG 642", "ac": "359", "bay": "S107", "gate": "S107", "sobt": "23:50/09", "eobt": "23:50/09", "aobt": "00:01/10", "atot": "00:20/10", "dest": "NRT", "status": "OPR", "nature": "01", "risk_score": 36, "tobt_changes": 2, "tsat_shifts": 0, "is_remote": true, "is_peak": false, "otp": 68, "eobt_delay": 0, "weather": 2, "factors": ["Bay Remote", "OTP ต่ำ (68%)"]}, {"al": "VZ", "flight": "VZ 964", "ac": "7M8", "bay": "S127", "gate": "S127", "sobt": "08:10/10", "eobt": "08:10/10", "aobt": "08:30/10", "atot": "08:44/10", "dest": "DAD", "status": "OPR", "nature": "01", "risk_score": 36, "tobt_changes": 1, "tsat_shifts": 0, "is_remote": true, "is_peak": true, "otp": 82, "eobt_delay": 0, "weather": 1, "factors": ["Bay Remote", "ช่วง Peak Hour"]}, {"al": "PG", "flight": "PG 121", "ac": "319", "bay": "103L", "gate": "A7", "sobt": "07:15/10", "eobt": "07:15/10", "aobt": "07:17/10", "atot": "07:25/10", "dest": "USM", "status": "OPR", "nature": "05", "risk_score": 34, "tobt_changes": 0, "tsat_shifts": 1, "is_remote": true, "is_peak": true, "otp": 91, "eobt_delay": 0, "weather": 3, "factors": ["Bay Remote", "ช่วง Peak Hour"]}, {"al": "QR", "flight": "QR 837", "ac": "388", "bay": "S111", "gate": "S111A", "sobt": "02:30/10", "eobt": "02:30/10", "aobt": "02:29/10", "atot": "02:42/10", "dest": "DOH", "status": "OPR", "nature": "01", "risk_score": 33, "tobt_changes": 3, "tsat_shifts": 0, "is_remote": true, "is_peak": false, "otp": 88, "eobt_delay": 0, "weather": 0, "factors": ["TOBT เปลี่ยน 3 ครั้ง", "Bay Remote"]}, {"al": "EK", "flight": "EK 377", "ac": "388", "bay": "S112", "gate": "S112A", "sobt": "02:50/10", "eobt": "02:50/10", "aobt": "02:48/10", "atot": "03:09/10", "dest": "DXB", "status": "OPR", "nature": "01", "risk_score": 32, "tobt_changes": 0, "tsat_shifts": 1, "is_remote": true, "is_peak": false, "otp": 79, "eobt_delay": 0, "weather": 7, "factors": ["Bay Remote"]}, {"al": "PG", "flight": "PG 115", "ac": "ATR", "bay": "101R", "gate": "A7", "sobt": "09:15/10", "eobt": "09:15/10", "aobt": "09:06/10", "atot": "09:12/10", "dest": "USM", "status": "OPR", "nature": "05", "risk_score": 32, "tobt_changes": 0, "tsat_shifts": 1, "is_remote": true, "is_peak": true, "otp": 91, "eobt_delay": 0, "weather": 1, "factors": ["Bay Remote", "ช่วง Peak Hour"]}];
+const DEST = {"HKT": "ภูเก็ต", "HAN": "ฮานอย", "KIX": "โอซาก้า", "CPH": "โคเปนเฮเกน", "ZRH": "ซูริค", "BRU": "บรัสเซลส์", "NGO": "นาโกย่า", "CTS": "ซัปโปโร", "NRT": "โตเกียว", "TLV": "เทลอาวีฟ", "ARN": "สตอกโฮล์ม", "DOH": "โดฮา", "DXB": "ดูไบ", "KUL": "กัวลาลัมเปอร์", "HND": "โตเกียว", "SAI": "กุยเฉา", "USM": "เกาะสมุย", "DAD": "ดานัง", "KTI": "กาญจนบุรี", "BOM": "มุมไบ", "KBV": "กระบี่", "ISB": "อิสลามาบัด", "DEL": "นิวเดลี", "SIN": "สิงคโปร์"};
 
-const DEST_MAP = {"HKT": "ภูเก็ต", "HAN": "ฮานอย", "KIX": "โอซาก้า", "CPH": "โคเปนเฮเกน", "ZRH": "ซูริค", "BRU": "บรัสเซลส์", "NGO": "นาโกย่า", "CTS": "ซัปโปโร", "NRT": "โตเกียว", "TLV": "เทลอาวีฟ", "ARN": "สตอกโฮล์ม", "DOH": "โดฮา", "DXB": "ดูไบ", "KUL": "กัวลาลัมเปอร์", "HND": "โตเกียว", "SAI": "กุยเฉา", "USM": "เกาะสมุย", "DAD": "ดานัง", "KTI": "กาญจนบุรี", "BOM": "มุมไบ", "KBV": "กระบี่", "ISB": "อิสลามาบัด", "DEL": "นิวเดลี", "SIN": "สิงคโปร์"};
+function rc(s){ return s>=80?'rh':s>=60?'ro':s>=30?'ry':'rg'; }
+function rl(s){ return s>=80?'High':s>=60?'Orange':s>=30?'Yellow':'Green'; }
+function rf(s){ return s>=80?'high':s>=60?'mh':s>=30?'ml':'low'; }
+function rcolor(s){ return s>=80?'#ef4444':s>=60?'#f97316':s>=30?'#eab308':'#22c55e'; }
+function ft(t){ return(!t||t==='None')?'—':t.replace('/10','').replace('/09',''); }
 
-function getRiskClass(score) {
-  if (score >= 80) return 'risk-high';
-  if (score >= 60) return 'risk-mh';
-  if (score >= 30) return 'risk-ml';
-  return 'risk-low';
+let curFilter='all', prevTab='summary', isMobile=()=>window.innerWidth<768;
+
+// ── Clock
+function tick(){
+  const n=new Date();
+  document.getElementById('clock').textContent=
+    String(n.getHours()).padStart(2,'0')+':'+String(n.getMinutes()).padStart(2,'0');
+}
+tick(); setInterval(tick,10000);
+
+// ── Tab switch (mobile)
+function switchTab(name){
+  if(name==='detail') return;
+  prevTab=name;
+  document.querySelectorAll('.page').forEach(p=>p.classList.remove('active'));
+  document.querySelectorAll('.tab-btn').forEach(b=>b.classList.remove('active'));
+  document.getElementById('page-'+name).classList.add('active');
+  document.getElementById('tab-'+name).classList.add('active');
 }
 
-function getRiskLabel(score) {
-  if (score >= 80) return 'High';
-  if (score >= 60) return 'Orange';
-  if (score >= 30) return 'Yellow';
-  return 'Green';
-}
+function goBack(){ switchTab(prevTab||'flights'); }
 
-function getRiskFilter(score) {
-  if (score >= 80) return 'high';
-  if (score >= 60) return 'mh';
-  if (score >= 30) return 'ml';
-  return 'low';
-}
-
-function getRiskColor(score) {
-  if (score >= 80) return '#ef4444';
-  if (score >= 60) return '#f97316';
-  if (score >= 30) return '#eab308';
-  return '#22c55e';
-}
-
-function formatTime(t) {
-  if (!t || t === 'None') return '—';
-  return t.replace('/10','').replace('/09','');
-}
-
-let currentFilter = 'all';
-let selectedFlight = null;
-
-function setFilter(filter, btn) {
-  currentFilter = filter;
-  document.querySelectorAll('.filter-btn').forEach(b => b.classList.remove('active'));
-  btn.classList.add('active');
-  renderTable();
-}
-
-function renderKPI() {
-  const high   = FLIGHTS.filter(f => f.risk_score >= 80).length;
-  const orange = FLIGHTS.filter(f => f.risk_score >= 60 && f.risk_score < 80).length;
-  const yellow = FLIGHTS.filter(f => f.risk_score >= 30 && f.risk_score < 60).length;
-  const green  = FLIGHTS.filter(f => f.risk_score < 30).length;
-  const total  = FLIGHTS.length;
-
-  document.getElementById('kpiRow').innerHTML = `
+// ── KPI
+function renderKPI(){
+  const h=FLIGHTS.filter(f=>f.risk_score>=80).length;
+  const o=FLIGHTS.filter(f=>f.risk_score>=60&&f.risk_score<80).length;
+  const y=FLIGHTS.filter(f=>f.risk_score>=30&&f.risk_score<60).length;
+  const g=FLIGHTS.filter(f=>f.risk_score<30).length;
+  const t=FLIGHTS.length;
+  document.getElementById('kpiGrid').innerHTML=`
     <div class="kpi-card total">
-      <div class="kpi-label">เที่ยวบินทั้งหมด</div>
-      <div class="kpi-value">${total}</div>
+      <div class="kpi-lbl">เที่ยวบินทั้งหมด</div>
+      <div class="kpi-val">${t}</div>
       <div class="kpi-sub">Departure · 10 ก.ค. 69</div>
+      <div class="otp-row">
+        <div class="otp-item"><div class="otp-item-val" style="color:var(--red)">${h}</div><div class="otp-item-lbl">🔴 High</div></div>
+        <div class="otp-item"><div class="otp-item-val" style="color:var(--orange)">${o}</div><div class="otp-item-lbl">🟠 Orange</div></div>
+        <div class="otp-item"><div class="otp-item-val" style="color:var(--yellow)">${y}</div><div class="otp-item-lbl">🟡 Yellow</div></div>
+        <div class="otp-item"><div class="otp-item-val" style="color:var(--green)">${g}</div><div class="otp-item-lbl">🟢 Green</div></div>
+      </div>
     </div>
-    <div class="kpi-card red">
-      <div class="kpi-label">🔴 High Risk</div>
-      <div class="kpi-value">${high}</div>
-      <div class="kpi-sub">Risk ≥ 80 · ดำเนินการทันที</div>
-    </div>
-    <div class="kpi-card orange">
-      <div class="kpi-label">🟠 ควรติดตาม</div>
-      <div class="kpi-value">${orange}</div>
-      <div class="kpi-sub">Risk 60–79</div>
-    </div>
-    <div class="kpi-card yellow">
-      <div class="kpi-label">🟡 เฝ้าระวัง</div>
-      <div class="kpi-value">${yellow}</div>
-      <div class="kpi-sub">Risk 30–59</div>
-    </div>
-    <div class="kpi-card green">
-      <div class="kpi-label">🟢 ปกติ</div>
-      <div class="kpi-value">${green}</div>
-      <div class="kpi-sub">Risk &lt; 30</div>
-    </div>`;
+    <div class="kpi-card c-red"><div class="kpi-lbl">🔴 High Risk</div><div class="kpi-val">${h}</div><div class="kpi-sub">ดำเนินการทันที</div></div>
+    <div class="kpi-card c-orange"><div class="kpi-lbl">🟠 ติดตาม</div><div class="kpi-val">${o}</div><div class="kpi-sub">Risk 60–79</div></div>
+    <div class="kpi-card c-yellow"><div class="kpi-lbl">🟡 เฝ้าระวัง</div><div class="kpi-val">${y}</div><div class="kpi-sub">Risk 30–59</div></div>
+    <div class="kpi-card c-green"><div class="kpi-lbl">🟢 ปกติ</div><div class="kpi-val">${g}</div><div class="kpi-sub">Risk &lt; 30</div></div>`;
 
-  document.getElementById('totalBadge').textContent = `${total} เที่ยวบิน`;
+  // Distribution chart
+  const cats=[{l:'High 80+',v:h,c:'#ef4444'},{l:'Orange 60',v:o,c:'#f97316'},{l:'Yellow 30',v:y,c:'#eab308'},{l:'Green <30',v:g,c:'#22c55e'}];
+  const mx=Math.max(...cats.map(c=>c.v));
+  document.getElementById('distChart').innerHTML=cats.map(c=>`
+    <div style="flex:1;display:flex;flex-direction:column;align-items:center;gap:4px;height:100%;justify-content:flex-end;">
+      <div style="font-size:13px;font-weight:700;color:${c.c};font-family:'IBM Plex Mono',monospace">${c.v}</div>
+      <div style="width:100%;height:${Math.round((c.v/mx)*60)}px;background:${c.c};border-radius:5px 5px 0 0;opacity:.85;min-height:5px;"></div>
+    </div>`).join('');
+  document.getElementById('distLbls').innerHTML=cats.map(c=>`<div style="flex:1;text-align:center;font-size:9px;color:var(--muted)">${c.l}</div>`).join('');
 }
 
-function renderTable() {
-  const filtered = currentFilter === 'all' 
-    ? FLIGHTS 
-    : FLIGHTS.filter(f => getRiskFilter(f.risk_score) === currentFilter);
-
-  const tbody = document.getElementById('flightTableBody');
-  tbody.innerHTML = filtered.map((f, i) => {
-    const cls = getRiskClass(f.risk_score);
-    const color = getRiskColor(f.risk_score);
-    const remote = f.is_remote;
-    const destName = DEST_MAP[f.dest] || f.dest;
-    const factors = f.factors.slice(0,3).join(' · ');
-    const filterKey = getRiskFilter(f.risk_score);
-    const isSelected = selectedFlight && selectedFlight.flight === f.flight;
-
-    return `<tr class="${isSelected ? 'selected' : ''}" data-risk="${filterKey}" onclick="selectFlight(${FLIGHTS.indexOf(f)})">
-      <td>
-        <div class="risk-score ${cls}">
-          <span class="risk-num">${f.risk_score}</span>
-          <div class="risk-bar-wrap"><div class="risk-bar" style="width:${f.risk_score}%"></div></div>
-          <span class="risk-tag">${getRiskLabel(f.risk_score)}</span>
-        </div>
-      </td>
-      <td><span class="flight-num">${f.flight}</span></td>
-      <td><span class="al-badge">${f.al}</span></td>
-      <td class="time-cell">${f.ac}</td>
-      <td class="bay-cell ${remote ? 'bay-remote' : 'bay-contact'}">${f.bay}${remote ? ' ⬡' : ' ◉'}</td>
-      <td class="time-cell">${formatTime(f.sobt)}</td>
-      <td class="time-cell" style="color:${f.eobt !== f.sobt ? '#f97316' : 'inherit'}">${formatTime(f.eobt)}</td>
-      <td style="font-size:11px;">${destName}</td>
-      <td style="font-size:10px;color:var(--text-muted);max-width:180px;overflow:hidden;text-overflow:ellipsis;">${factors}</td>
-    </tr>`;
-  }).join('');
+// ── Traffic
+function renderTraffic(id1,id2){
+  const hrs=['07','08','09','10','11','12','13','14','15','16','17','18','19','20'];
+  const isPeak=h=>['07','08','09','17','18','19'].includes(h);
+  const seed=hrs.map(h=>isPeak(h)?Math.floor(Math.random()*7+12):Math.floor(Math.random()*5+4));
+  const mx=Math.max(...seed);
+  const bars=hrs.map((h,i)=>`
+    <div class="tbar-wrap">
+      <div class="tbar" style="height:${Math.round(seed[i]/mx*100)}%;background:${isPeak(h)?'#f97316':'#3b82f6'};opacity:.8;"></div>
+    </div>`).join('');
+  const lbls=hrs.map(h=>`<div style="flex:1;text-align:center;font-size:8px;color:var(--muted)">${h}</div>`).join('');
+  [id1,id2].forEach(id=>{const el=document.getElementById(id);if(el)el.innerHTML=bars;});
+  ['trafficLbls','trafficLbls2'].forEach(id=>{const el=document.getElementById(id);if(el)el.innerHTML=lbls;});
 }
 
-function getRecommendations(f) {
-  const recs = [];
-  if (f.risk_score >= 80) {
-    recs.push('ประสาน Ground Handler เร่ง Boarding ทันที');
-    recs.push('แจ้ง ATFMU ความเสี่ยงพลาด CTOT');
-    recs.push('จัดลำดับ Pushback ให้เที่ยวบินนี้ก่อน');
-  }
-  if (f.tobt_changes >= 3) recs.push('ขอปรับ TOBT ให้สอดคล้องกับสถานการณ์จริง');
-  if (f.is_remote) recs.push('จัดรถ Bus ล่วงหน้าสำหรับ Remote Stand');
-  if (f.is_peak) recs.push('ระวัง Traffic congestion บน Taxiway ช่วง Peak');
-  if (f.otp < 75) recs.push(`ติดตาม OTP สายการบิน ${f.al} เป็นพิเศษ`);
-  if (f.weather > 10) recs.push('ตรวจสอบ SIGMET และ Weather minima ก่อน Pushback');
-  if (recs.length === 0) recs.push('ไม่มีการดำเนินการพิเศษ — ติดตามตามปกติ');
-  return recs;
+// ── Flights
+function setFilter(f,btn){
+  curFilter=f;
+  document.querySelectorAll('.pill').forEach(b=>b.classList.remove('active'));
+  btn.classList.add('active');
+  renderFlights();
 }
 
-function selectFlight(idx) {
-  selectedFlight = FLIGHTS[idx];
-  renderTable();
-  renderDetail(selectedFlight);
-}
-
-function renderDetail(f) {
-  if (!f) return;
-  const color = getRiskColor(f.risk_score);
-  const cls = getRiskClass(f.risk_score);
-  const recs = getRecommendations(f);
-  const destName = DEST_MAP[f.dest] || f.dest;
-
-  const factorIcons = {
-    'TOBT': '🔄', 'TSAT': '⏱', 'Bay Remote': '📍', 'Peak': '🚦',
-    'OTP': '📉', 'EOBT': '⏳', 'สภาพอากาศ': '⛈', 'ปกติ': '✅'
-  };
-
-  function factorIcon(s) {
-    for (const [k,v] of Object.entries(factorIcons)) {
-      if (s.includes(k)) return v;
-    }
-    return '⚠️';
-  }
-
-  // Factor breakdown for visualization
-  const factorScores = [
-    { lbl: 'Airline OTP', val: Math.round((100 - f.otp) * 0.3), color: '#818cf8' },
-    { lbl: 'TOBT Changes', val: f.tobt_changes * 5, color: '#f97316' },
-    { lbl: 'TSAT Shifts', val: f.tsat_shifts * 4, color: '#eab308' },
-    { lbl: 'Remote Stand', val: f.is_remote ? 15 : 0, color: '#a78bfa' },
-    { lbl: 'Peak Hour', val: f.is_peak ? 10 : 0, color: '#22d3ee' },
-    { lbl: 'EOBT Delay', val: Math.round(f.eobt_delay * 0.5), color: '#fb7185' },
-    { lbl: 'Weather', val: f.weather, color: '#34d399' },
-  ];
-
-  document.getElementById('flightDetail').innerHTML = `
-    <div class="detail-card">
-      <div class="detail-header">
+function renderFlights(){
+  const list=curFilter==='all'?FLIGHTS:FLIGHTS.filter(f=>rf(f.risk_score)===curFilter);
+  document.getElementById('flightBadge').textContent=list.length+' เที่ยวบิน';
+  document.getElementById('flightList').innerHTML=list.map((f,i)=>{
+    const cls=rc(f.risk_score); const col=rcolor(f.risk_score);
+    const dest=DEST[f.dest]||f.dest;
+    return `<div class="flight-card ${cls}" onclick="openFlight(${FLIGHTS.indexOf(f)})">
+      <div class="fc-top">
         <div>
-          <div class="detail-flight">${f.flight}</div>
-          <div style="font-size:11px;color:var(--text-secondary);margin-top:3px;">
-            ${f.al} · ${f.ac} → ${destName}
-          </div>
+          <div class="fc-flight">${f.flight}</div>
+          <span class="fc-al">${f.al}</span>
         </div>
-        <div class="detail-risk-circle ${cls}" style="border-color:${color};color:${color}">
+        <div class="risk-circle" style="border-color:${col};color:${col}">
           <div>${f.risk_score}</div>
-          <div class="detail-risk-label">${getRiskLabel(f.risk_score)}</div>
+          <div class="risk-lbl-sm">${rl(f.risk_score)}</div>
         </div>
       </div>
-
-      <div class="detail-info-grid">
-        <div class="d-info">
-          <div class="d-info-lbl">Bay / Gate</div>
-          <div class="d-info-val">${f.bay} / ${f.gate}</div>
-        </div>
-        <div class="d-info">
-          <div class="d-info-lbl">Stand Type</div>
-          <div class="d-info-val" style="color:${f.is_remote ? '#f97316' : '#4ade80'}">${f.is_remote ? 'REMOTE ⬡' : 'CONTACT ◉'}</div>
-        </div>
-        <div class="d-info">
-          <div class="d-info-lbl">SOBT</div>
-          <div class="d-info-val">${formatTime(f.sobt)}</div>
-        </div>
-        <div class="d-info">
-          <div class="d-info-lbl">EOBT</div>
-          <div class="d-info-val" style="color:${f.eobt !== f.sobt ? '#f97316' : 'inherit'}">${formatTime(f.eobt)}</div>
-        </div>
-        <div class="d-info">
-          <div class="d-info-lbl">TOBT เปลี่ยน</div>
-          <div class="d-info-val" style="color:${f.tobt_changes >= 3 ? '#ef4444' : 'inherit'}">${f.tobt_changes} ครั้ง</div>
-        </div>
-        <div class="d-info">
-          <div class="d-info-lbl">Airline OTP</div>
-          <div class="d-info-val" style="color:${f.otp < 75 ? '#ef4444' : f.otp < 85 ? '#eab308' : '#22c55e'}">${f.otp}%</div>
-        </div>
+      <div class="fc-mid">
+        <div class="fc-info"><div class="fc-info-lbl">ปลายทาง</div><div class="fc-info-val" style="font-size:13px">${dest}</div></div>
+        <div class="fc-info"><div class="fc-info-lbl">SOBT</div><div class="fc-info-val">${ft(f.sobt)}</div></div>
+        <div class="fc-info"><div class="fc-info-lbl">Bay</div><div class="fc-info-val" style="color:${f.is_remote?'#f97316':'#4ade80'};font-size:11px">${f.bay}${f.is_remote?' ⬡':' ◉'}</div></div>
       </div>
-
-      <div class="factor-title">📊 AI Risk Factor Breakdown</div>
-      ${factorScores.map(fs => `
-        <div class="factor-bar-row">
-          <div class="factor-bar-lbl">${fs.lbl}</div>
-          <div class="factor-bar-track">
-            <div class="factor-bar-fill" style="width:${Math.min(100, fs.val * 3.5)}%;background:${fs.color}"></div>
-          </div>
-          <div class="factor-bar-val" style="color:${fs.color}">${fs.val}</div>
-        </div>`).join('')}
-
-      <div class="factor-title" style="margin-top:10px;">⚠️ ปัจจัยเสี่ยงที่ตรวจพบ</div>
-      <div class="factor-list">
-        ${f.factors.map(fc => `
-          <div class="factor-item">
-            <span class="factor-icon">${Object.entries({TOBT:'🔄',TSAT:'⏱',Remote:'📍',Peak:'🚦',OTP:'📉',EOBT:'⏳',อากาศ:'⛈',ปกติ:'✅'}).find(([k])=>fc.includes(k))?.[1] || '⚠️'}</span>
-            <span>${fc}</span>
-          </div>`).join('')}
-      </div>
-
-      <div class="recommendation">
-        <div class="rec-title">🤖 AI Recommendations</div>
-        ${recs.map(r => `<div class="rec-item">${r}</div>`).join('')}
-      </div>
-    </div>`;
-}
-
-function renderTraffic() {
-  const hours = ['07','08','09','10','11','12','13','14','15','16','17','18','19','20'];
-  const counts = hours.map(h => {
-    const peak = ['07','08','09','17','18','19'].includes(h);
-    return peak ? Math.floor(Math.random()*8 + 12) : Math.floor(Math.random()*5 + 4);
-  });
-  const max = Math.max(...counts);
-
-  document.getElementById('trafficBars').innerHTML = counts.map((c, i) => {
-    const isPeak = ['07','08','09','17','18','19'].includes(hours[i]);
-    const pct = Math.round((c / max) * 100);
-    const color = isPeak ? '#f97316' : '#3b82f6';
-    return `<div class="t-bar-wrap">
-      <div class="t-bar" style="height:${pct}%;background:${color};min-height:4px;opacity:0.85"></div>
+      <div class="fc-factors">${f.factors.slice(0,3).map(fc=>`<span class="fc-factor">${fc}</span>`).join('')}</div>
     </div>`;
   }).join('');
-
-  document.getElementById('trafficLabels').innerHTML = hours.map(h => 
-    `<div style="flex:1;text-align:center;font-size:8px;color:var(--text-muted)">${h}</div>`
-  ).join('');
 }
 
-function updateClock() {
-  const now = new Date();
-  const h = String(now.getHours()).padStart(2,'0');
-  const m = String(now.getMinutes()).padStart(2,'0');
-  const s = String(now.getSeconds()).padStart(2,'0');
-  document.getElementById('clock').textContent = `${h}:${m}:${s}`;
+// ── Flight Detail
+function getRecs(f){
+  const r=[];
+  if(f.risk_score>=80){r.push('ประสาน Ground Handler เร่ง Boarding ทันที');r.push('แจ้ง ATFMU ความเสี่ยงพลาด CTOT');}
+  if(f.tobt_changes>=3) r.push('ขอปรับ TOBT ให้สอดคล้องกับสถานการณ์จริง');
+  if(f.is_remote) r.push('จัดรถ Bus ล่วงหน้าสำหรับ Remote Stand');
+  if(f.is_peak) r.push('ระวัง Traffic congestion ช่วง Peak Hour');
+  if(f.otp<75) r.push(`ติดตาม OTP ของ ${f.al} เป็นพิเศษ`);
+  if(f.weather>10) r.push('ตรวจสอบ SIGMET ก่อน Pushback');
+  if(!r.length) r.push('ไม่มีการดำเนินการพิเศษ — ติดตามตามปกติ');
+  return r;
 }
 
-// Init
+function buildDetailHTML(f){
+  const col=rcolor(f.risk_score);
+  const dest=DEST[f.dest]||f.dest;
+  const recs=getRecs(f);
+  const factors=[
+    {l:'Airline OTP',v:Math.round((100-f.otp)*.3),c:'#818cf8'},
+    {l:'TOBT Changes',v:f.tobt_changes*5,c:'#f97316'},
+    {l:'TSAT Shifts',v:f.tsat_shifts*4,c:'#eab308'},
+    {l:'Remote Stand',v:f.is_remote?15:0,c:'#a78bfa'},
+    {l:'Peak Hour',v:f.is_peak?10:0,c:'#22d3ee'},
+    {l:'EOBT Delay',v:Math.round(f.eobt_delay*.5),c:'#fb7185'},
+    {l:'Weather',v:f.weather,c:'#34d399'},
+  ];
+  const ficons={'TOBT':'🔄','TSAT':'⏱','Remote':'📍','Peak':'🚦','OTP':'📉','EOBT':'⏳','อากาศ':'⛈','ปกติ':'✅'};
+  function fi(s){for(const[k,v]of Object.entries(ficons))if(s.includes(k))return v;return '⚠️';}
+  return `
+    <div class="detail-hero">
+      <div>
+        <div class="detail-flight-num">${f.flight}</div>
+        <div class="detail-sub">${f.al} · ${f.ac} · ${dest}</div>
+      </div>
+      <div class="big-circle" style="border-color:${col};color:${col}">
+        <div>${f.risk_score}</div>
+        <div class="big-lbl">${rl(f.risk_score)}</div>
+      </div>
+    </div>
+
+    <div class="info-grid">
+      <div class="info-cell"><div class="info-lbl">Bay / Gate</div><div class="info-val">${f.bay} / ${f.gate}</div></div>
+      <div class="info-cell"><div class="info-lbl">Stand Type</div><div class="info-val" style="color:${f.is_remote?'#f97316':'#4ade80'}">${f.is_remote?'REMOTE ⬡':'CONTACT ◉'}</div></div>
+      <div class="info-cell"><div class="info-lbl">SOBT</div><div class="info-val">${ft(f.sobt)}</div></div>
+      <div class="info-cell"><div class="info-lbl">EOBT</div><div class="info-val" style="color:${f.eobt!==f.sobt?'#f97316':'inherit'}">${ft(f.eobt)}</div></div>
+      <div class="info-cell"><div class="info-lbl">TOBT เปลี่ยน</div><div class="info-val" style="color:${f.tobt_changes>=3?'#ef4444':'inherit'}">${f.tobt_changes} ครั้ง</div></div>
+      <div class="info-cell"><div class="info-lbl">Airline OTP</div><div class="info-val" style="color:${f.otp<75?'#ef4444':f.otp<85?'#eab308':'#22c55e'}">${f.otp}%</div></div>
+    </div>
+
+    <div class="factor-section">
+      <div class="fs-title">📊 AI Risk Factor Breakdown</div>
+      ${factors.map(fs=>`<div class="fbar-row">
+        <div class="fbar-lbl">${fs.l}</div>
+        <div class="fbar-track"><div class="fbar-fill" style="width:${Math.min(100,fs.v*3.5)}%;background:${fs.c}"></div></div>
+        <div class="fbar-val" style="color:${fs.c}">${fs.v}</div>
+      </div>`).join('')}
+    </div>
+
+    <div class="factor-section">
+      <div class="fs-title">⚠️ ปัจจัยเสี่ยงที่ตรวจพบ</div>
+      <div class="factor-tags">${f.factors.map(fc=>`<div class="factor-tag"><span>${fi(fc)}</span><span>${fc}</span></div>`).join('')}</div>
+    </div>
+
+    <div class="rec-section">
+      <div class="rec-title">🤖 AI Recommendations</div>
+      ${recs.map(r=>`<div class="rec-item">${r}</div>`).join('')}
+    </div>`;
+}
+
+function openFlight(idx){
+  const f=FLIGHTS[idx];
+  const html=buildDetailHTML(f);
+  if(isMobile()){
+    document.getElementById('detailContent').innerHTML=html;
+    document.querySelectorAll('.page').forEach(p=>p.classList.remove('active'));
+    document.getElementById('page-detail').classList.add('active');
+    document.querySelectorAll('.tab-btn').forEach(b=>b.classList.remove('active'));
+    window.scrollTo(0,0);
+  } else {
+    document.getElementById('overlayContent').innerHTML=html;
+    document.getElementById('desktopOverlay').classList.add('open');
+  }
+}
+
+function closeOverlay(){
+  document.getElementById('desktopOverlay').classList.remove('open');
+}
+
+// ── Init
 renderKPI();
-renderTable();
-renderTraffic();
-updateClock();
-setInterval(updateClock, 1000);
+renderTraffic('trafficBars','trafficBars2');
+renderFlights();
 
-// Select first high-risk flight
-const firstHigh = FLIGHTS.findIndex(f => f.risk_score >= 60);
-if (firstHigh >= 0) selectFlight(firstHigh);
+// On mobile, start on summary; on desktop, show flights
+if(!isMobile()){
+  document.getElementById('page-flights').classList.add('active');
+}
 </script>
 </body>
 </html>
