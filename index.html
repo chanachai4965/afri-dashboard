@@ -2,704 +2,893 @@
 <html lang="th">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
-<title>AFRI – AI Flight Risk Dashboard</title>
+<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1">
+<title>BKK APOC · AI Predictive Operations Dashboard</title>
 <style>
-@import url('https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+Thai:wght@300;400;500;600;700&family=IBM+Plex+Mono:wght@400;600&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600&display=swap');
 
-:root {
-  --bg: #080d1a;
-  --bg2: #0d1428;
-  --card: #111c36;
-  --card2: #162040;
-  --border: #1e2d52;
-  --border2: #253565;
-  --text: #dde6f8;
-  --muted: #5a6f9c;
-  --dim: #3a4d78;
-  --blue: #3b82f6;
-  --cyan: #22d3ee;
-  --red: #ef4444;
-  --orange: #f97316;
-  --yellow: #eab308;
-  --green: #22c55e;
-  --red-bg: rgba(239,68,68,0.12);
-  --orange-bg: rgba(249,115,22,0.12);
-  --yellow-bg: rgba(234,179,8,0.10);
-  --green-bg: rgba(34,197,94,0.10);
-  --radius: 14px;
-  --radius-sm: 8px;
+:root{
+  --bg:#040d1e;
+  --bg2:#061228;
+  --bg3:#081630;
+  --glass:rgba(8,22,50,0.7);
+  --glass2:rgba(6,18,40,0.85);
+  --border:rgba(34,80,160,0.35);
+  --border2:rgba(59,130,246,0.25);
+  --glow:rgba(34,211,238,0.08);
+  --text:#dde8ff;
+  --muted:#5a7aab;
+  --dim:#2a3d60;
+  --blue:#3b82f6;
+  --cyan:#22d3ee;
+  --cyan2:#06b6d4;
+  --navy:#1e3a8a;
+  --red:#ef4444;
+  --orange:#f97316;
+  --yellow:#eab308;
+  --green:#22c55e;
+  --purple:#a855f7;
+  --r:14px; --r2:10px; --r3:8px;
+  --font:'Inter',sans-serif;
+  --mono:'JetBrains Mono',monospace;
 }
 
-* { margin:0; padding:0; box-sizing:border-box; -webkit-tap-highlight-color:transparent; }
+*{margin:0;padding:0;box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+html{scroll-behavior:smooth}
+body{font-family:var(--font);background:var(--bg);color:var(--text);min-height:100vh;overflow-x:hidden;font-size:13px}
+body::before{content:'';position:fixed;inset:0;background:radial-gradient(ellipse 80% 50% at 50% -20%,rgba(30,58,138,0.3),transparent),radial-gradient(ellipse 60% 40% at 80% 80%,rgba(6,18,40,0.5),transparent);pointer-events:none;z-index:0}
 
-body {
-  font-family: 'IBM Plex Sans Thai', sans-serif;
-  background: var(--bg);
-  color: var(--text);
-  font-size: 14px;
-  min-height: 100vh;
-  overscroll-behavior: none;
+/* ── HEADER ─────────────────────────────────────── */
+.hdr{
+  position:sticky;top:0;z-index:300;
+  background:rgba(4,13,30,0.92);
+  backdrop-filter:blur(20px);
+  border-bottom:1px solid var(--border2);
+  padding:0 20px;height:58px;
+  display:flex;align-items:center;justify-content:space-between;
+  box-shadow:0 4px 30px rgba(0,0,60,0.5);
+}
+.hdr-l{display:flex;align-items:center;gap:14px}
+.hdr-logo{
+  width:40px;height:40px;border-radius:10px;flex-shrink:0;
+  background:linear-gradient(135deg,#1e3a8a,#0891b2);
+  display:flex;align-items:center;justify-content:center;font-size:20px;
+  box-shadow:0 0 20px rgba(34,211,238,0.3),inset 0 0 10px rgba(255,255,255,0.05);
+}
+.hdr-txt h1{font-size:15px;font-weight:800;letter-spacing:.3px;background:linear-gradient(90deg,#e2e8ff,#22d3ee);-webkit-background-clip:text;-webkit-text-fill-color:transparent}
+.hdr-txt p{font-size:10px;color:var(--muted);margin-top:1px}
+.hdr-r{display:flex;align-items:center;gap:14px}
+.live-badge{display:flex;align-items:center;gap:5px;background:rgba(34,197,94,0.1);border:1px solid rgba(34,197,94,0.3);border-radius:20px;padding:4px 11px;font-size:10px;font-weight:700;color:#22c55e}
+.ldot{width:6px;height:6px;background:#22c55e;border-radius:50%;animation:pulse 1.5s infinite}
+@keyframes pulse{0%,100%{opacity:1;transform:scale(1)}50%{opacity:.4;transform:scale(1.5)}}
+.hdr-clock{font-family:var(--mono);font-size:16px;font-weight:600;color:var(--cyan);letter-spacing:1.5px}
+.hdr-date{font-size:10px;color:var(--muted);text-align:right;line-height:1.6}
+
+/* ── ALERT BANNER ──────────────────────────────── */
+.alert-bar{
+  background:linear-gradient(90deg,rgba(239,68,68,0.12),rgba(249,115,22,0.08),rgba(239,68,68,0.12));
+  border-bottom:1px solid rgba(239,68,68,0.3);
+  padding:7px 20px;display:flex;align-items:center;gap:12px;
+  font-size:11px;color:#fca5a5;font-weight:500;
+  animation:slidein .5s ease;
+}
+@keyframes slidein{from{transform:translateY(-100%)}to{transform:translateY(0)}}
+.alert-badge{background:var(--red);color:#fff;font-size:10px;font-weight:700;padding:2px 8px;border-radius:10px;flex-shrink:0}
+.alert-scroll{white-space:nowrap;animation:scroll 30s linear infinite}
+@keyframes scroll{0%{transform:translateX(0)}100%{transform:translateX(-50%)}}
+
+/* ── BOTTOM TAB (mobile) ───────────────────────── */
+.bottom-nav{
+  position:fixed;bottom:0;left:0;right:0;z-index:300;
+  background:rgba(4,13,30,0.95);backdrop-filter:blur(20px);
+  border-top:1px solid var(--border);
+  display:flex;height:62px;
+  padding-bottom:env(safe-area-inset-bottom);
+}
+.bnav-btn{
+  flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;
+  gap:3px;border:none;background:none;color:var(--muted);
+  font-family:var(--font);font-size:9px;font-weight:600;cursor:pointer;
+  text-transform:uppercase;letter-spacing:.5px;transition:color .15s;
+}
+.bnav-btn.active{color:var(--cyan)}
+.bnav-icon{font-size:20px;line-height:1}
+
+/* ── PAGE SYSTEM ───────────────────────────────── */
+.page{display:none;padding:14px 12px 80px;position:relative;z-index:1;animation:fadein .25s ease}
+.page.active{display:block}
+@keyframes fadein{from{opacity:0;transform:translateY(6px)}to{opacity:1;transform:translateY(0)}}
+
+/* ── GLASS CARD ────────────────────────────────── */
+.card{
+  background:var(--glass);
+  border:1px solid var(--border);
+  border-radius:var(--r);
+  backdrop-filter:blur(10px);
+  box-shadow:0 4px 24px rgba(0,0,40,0.4),inset 0 1px 0 rgba(255,255,255,0.05);
+  overflow:hidden;
+  position:relative;
+}
+.card::before{content:'';position:absolute;top:0;left:0;right:0;height:1px;background:linear-gradient(90deg,transparent,rgba(34,211,238,0.3),transparent)}
+
+/* ── KPI ROW ───────────────────────────────────── */
+.kpi-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:10px;margin-bottom:14px}
+.kpi{
+  background:var(--glass);border:1px solid var(--border);border-radius:var(--r2);
+  padding:13px 14px;position:relative;overflow:hidden;
+  backdrop-filter:blur(10px);
+}
+.kpi::after{content:'';position:absolute;top:0;left:0;right:0;height:2px}
+.kpi.ck::after{background:linear-gradient(90deg,var(--cyan2),var(--cyan))}
+.kpi.rk::after{background:var(--red)}
+.kpi.ok::after{background:var(--orange)}
+.kpi.gk::after{background:var(--green)}
+.kpi.pk::after{background:var(--purple)}
+.kpi.bk::after{background:var(--blue)}
+.kpi.yk::after{background:var(--yellow)}
+.kpi-lbl{font-size:9px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.8px;margin-bottom:5px}
+.kpi-val{font-size:26px;font-weight:800;font-family:var(--mono);line-height:1}
+.kpi-sub{font-size:9px;color:var(--dim);margin-top:3px}
+.kpi.ck .kpi-val{color:var(--cyan)}
+.kpi.rk .kpi-val{color:var(--red)}
+.kpi.ok .kpi-val{color:var(--orange)}
+.kpi.gk .kpi-val{color:var(--green)}
+.kpi.pk .kpi-val{color:var(--purple)}
+.kpi.bk .kpi-val{color:var(--blue)}
+.kpi.yk .kpi-val{color:var(--yellow)}
+
+/* ── SECTION HEADER ────────────────────────────── */
+.sh{display:flex;align-items:center;justify-content:space-between;margin-bottom:10px}
+.sh h2{font-size:12px;font-weight:700;color:var(--text);display:flex;align-items:center;gap:6px}
+.sh-badge{font-size:9px;font-weight:700;background:rgba(59,130,246,.15);color:var(--blue);border:1px solid rgba(59,130,246,.3);border-radius:10px;padding:2px 8px}
+
+/* ── RISK PILL ─────────────────────────────────── */
+.rnum{font-family:var(--mono);font-weight:700}
+.badge{display:inline-block;padding:2px 8px;border-radius:8px;font-size:9px;font-weight:700;letter-spacing:.3px;text-transform:uppercase}
+.b-red{background:rgba(239,68,68,.15);color:#ef4444;border:1px solid rgba(239,68,68,.3)}
+.b-orange{background:rgba(249,115,22,.12);color:#f97316;border:1px solid rgba(249,115,22,.3)}
+.b-yellow{background:rgba(234,179,8,.1);color:#eab308;border:1px solid rgba(234,179,8,.3)}
+.b-green{background:rgba(34,197,94,.1);color:#22c55e;border:1px solid rgba(34,197,94,.3)}
+.b-blue{background:rgba(59,130,246,.12);color:#93c5fd;border:1px solid rgba(59,130,246,.25)}
+.b-purple{background:rgba(168,85,247,.12);color:#d8b4fe;border:1px solid rgba(168,85,247,.25)}
+
+/* ── FLIGHT CARDS ──────────────────────────────── */
+.fc-list{display:flex;flex-direction:column;gap:8px}
+.fc{
+  background:var(--glass2);border:1px solid var(--border);border-radius:var(--r2);
+  padding:12px 13px;cursor:pointer;
+  border-left:3px solid transparent;
+  transition:all .15s;
+}
+.fc:active{opacity:.8}
+.fc.sel{border-left-color:var(--cyan);background:rgba(34,211,238,0.05)}
+.fc.risk-h{border-left-color:var(--red)}
+.fc.risk-o{border-left-color:var(--orange)}
+.fc.risk-y{border-left-color:var(--yellow)}
+.fc.risk-g{border-left-color:var(--green)}
+.fc-top{display:flex;align-items:flex-start;justify-content:space-between;margin-bottom:8px}
+.fc-flt{font-family:var(--mono);font-size:16px;font-weight:700;color:var(--cyan)}
+.fc-al{font-size:10px;font-weight:600;color:var(--muted);margin-top:2px}
+.fc-score-wrap{text-align:center}
+.fc-score{
+  width:48px;height:48px;border-radius:50%;
+  display:flex;flex-direction:column;align-items:center;justify-content:center;
+  border:2.5px solid;font-family:var(--mono);font-weight:700;font-size:14px;line-height:1.1
+}
+.fc-slbl{font-size:8px;font-family:var(--font);font-weight:500;margin-top:1px}
+.fc-mid{display:grid;grid-template-columns:repeat(3,1fr);gap:6px;margin-bottom:7px}
+.fc-cell{background:rgba(6,18,40,.6);border-radius:var(--r3);padding:5px 8px}
+.fc-cell-l{font-size:8px;color:var(--muted);text-transform:uppercase;letter-spacing:.3px}
+.fc-cell-v{font-size:11px;font-weight:600;font-family:var(--mono);margin-top:1px}
+.fc-tags{display:flex;gap:5px;flex-wrap:wrap}
+.fc-tag{font-size:9px;padding:2px 7px;border-radius:8px;background:rgba(255,255,255,.05);color:var(--muted);border:1px solid var(--border)}
+
+/* ── ARRIVAL CARD ──────────────────────────────── */
+.ac-list{display:flex;flex-direction:column;gap:8px}
+.ac{
+  background:var(--glass2);border:1px solid var(--border);border-radius:var(--r2);padding:11px 13px;cursor:pointer;
+  border-left:3px solid transparent;transition:all .15s;
+}
+.ac.dl60{border-left-color:var(--red);background:rgba(239,68,68,.04)}
+.ac.dl30{border-left-color:var(--orange)}
+.ac.dl0{border-left-color:var(--green)}
+.ac-top{display:flex;align-items:center;justify-content:space-between;margin-bottom:6px}
+.ac-flt{font-family:var(--mono);font-size:15px;font-weight:700;color:var(--cyan)}
+.ac-mid{display:grid;grid-template-columns:repeat(4,1fr);gap:5px;margin-bottom:6px}
+.delay-pill{
+  display:flex;align-items:center;gap:5px;
+  background:rgba(239,68,68,.12);border:1px solid rgba(239,68,68,.3);
+  border-radius:10px;padding:3px 10px;font-size:10px;font-weight:700;color:var(--red)
 }
 
-/* ── HEADER ───────────────────────────────────── */
-.header {
-  background: linear-gradient(135deg,#0c1630,#0f2060,#0c1630);
-  border-bottom: 1px solid var(--border2);
-  padding: 0 16px;
-  height: 56px;
-  display: flex; align-items: center; justify-content: space-between;
-  position: sticky; top: 0; z-index: 200;
-  box-shadow: 0 2px 20px rgba(0,0,40,0.7);
+/* ── AIRPORT MAP ───────────────────────────────── */
+.map-wrap{
+  background:var(--glass);border:1px solid var(--border);border-radius:var(--r);
+  overflow:hidden;position:relative;
+}
+.map-svg{width:100%;height:auto;display:block}
+.map-legend{
+  display:flex;flex-wrap:wrap;gap:10px;padding:10px 14px;
+  border-top:1px solid var(--border);background:rgba(4,13,30,.6)
+}
+.ml-item{display:flex;align-items:center;gap:5px;font-size:10px;color:var(--muted)}
+.ml-dot{width:10px;height:10px;border-radius:2px;flex-shrink:0}
+
+/* ── PASSENGER FORECAST ────────────────────────── */
+.pax-hero{
+  background:linear-gradient(135deg,rgba(30,58,138,.3),rgba(6,18,40,.5));
+  border:1px solid var(--border);border-radius:var(--r);padding:16px;margin-bottom:12px;
+}
+.pax-total{font-size:36px;font-weight:800;font-family:var(--mono);color:var(--cyan);line-height:1}
+.pax-sub{font-size:11px;color:var(--muted);margin-top:3px}
+.pax-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:8px;margin-bottom:12px}
+.pax-cell{background:var(--glass);border:1px solid var(--border);border-radius:var(--r2);padding:11px 13px}
+.pax-lbl{font-size:9px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.6px;margin-bottom:5px}
+.pax-val{font-size:20px;font-weight:700;font-family:var(--mono)}
+
+/* ── RUNWAY GAUGE ──────────────────────────────── */
+.rwy-section{background:var(--glass);border:1px solid var(--border);border-radius:var(--r);padding:16px;margin-bottom:12px}
+.gauge-wrap{display:flex;justify-content:center;margin:10px 0}
+.rwy-stats{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-top:10px}
+.rwy-cell{background:rgba(4,13,30,.6);border:1px solid var(--border);border-radius:var(--r3);padding:10px;text-align:center}
+.rwy-val{font-size:20px;font-weight:700;font-family:var(--mono);color:var(--cyan)}
+.rwy-lbl{font-size:9px;color:var(--muted);margin-top:2px;text-transform:uppercase}
+
+/* ── HOURLY CHART ──────────────────────────────── */
+.chart-wrap{background:var(--glass);border:1px solid var(--border);border-radius:var(--r);padding:14px;margin-bottom:12px}
+.bar-chart{display:flex;align-items:flex-end;gap:2px;height:80px;margin:10px 0 4px}
+.bar-group{flex:1;display:flex;flex-direction:column;align-items:center;gap:1px;height:100%;justify-content:flex-end}
+.bar-seg{width:100%;border-radius:2px 2px 0 0;min-height:2px}
+.bar-lbl{font-size:7px;color:var(--muted);margin-top:2px}
+.bar-cap-line{position:absolute;left:0;right:0;border-top:1px dashed rgba(239,68,68,.5)}
+
+/* ── AI RECOMMENDATIONS ────────────────────────── */
+.rec-list{display:flex;flex-direction:column;gap:8px}
+.rec{
+  background:var(--glass2);border:1px solid var(--border2);border-radius:var(--r2);
+  padding:11px 13px;display:flex;gap:10px;align-items:flex-start
+}
+.rec-icon{font-size:20px;flex-shrink:0;margin-top:1px}
+.rec-title{font-size:12px;font-weight:700;color:var(--text);margin-bottom:3px}
+.rec-body{font-size:11px;color:var(--muted);line-height:1.5}
+.rec.urgent{border-color:rgba(239,68,68,.3);background:rgba(239,68,68,.05)}
+.rec.warn{border-color:rgba(249,115,22,.25);background:rgba(249,115,22,.04)}
+.rec.info{border-color:rgba(34,211,238,.2);background:rgba(34,211,238,.03)}
+
+/* ── DETAIL PANEL ──────────────────────────────── */
+.detail-page{display:none;padding:14px 12px 80px;animation:fadein .2s ease}
+.detail-page.active{display:block}
+.back{
+  display:inline-flex;align-items:center;gap:6px;
+  background:var(--glass);border:1px solid var(--border);border-radius:10px;
+  padding:7px 14px;font-size:12px;color:var(--muted);cursor:pointer;
+  margin-bottom:12px;font-family:var(--font);
 }
 
-.hdr-left { display:flex; align-items:center; gap:10px; }
-
-.logo {
-  width:36px; height:36px; border-radius:9px;
-  background: linear-gradient(135deg,#1d4ed8,#06b6d4);
-  display:flex; align-items:center; justify-content:center;
-  font-size:17px;
-  box-shadow: 0 0 14px rgba(59,130,246,0.5);
-  flex-shrink:0;
+/* ── WEATHER STRIP ─────────────────────────────── */
+.wx-strip{
+  background:linear-gradient(135deg,rgba(30,58,138,.25),rgba(8,113,162,.15));
+  border:1px solid rgba(59,130,246,.2);border-radius:var(--r2);
+  padding:10px 14px;display:flex;align-items:center;justify-content:space-between;
+  margin-bottom:12px;font-size:11px;
 }
+.wx-main{font-size:16px;font-weight:700;color:#fff}
+.wx-sub{font-size:10px;color:var(--muted);margin-top:2px}
+.wx-metrics{display:flex;gap:12px}
+.wx-m{text-align:center}
+.wx-mv{font-size:14px;font-weight:700;font-family:var(--mono);color:var(--cyan)}
+.wx-ml{font-size:9px;color:var(--muted)}
 
-.hdr-title h1 { font-size:14px; font-weight:700; letter-spacing:.3px; }
-.hdr-title p  { font-size:10px; color:var(--muted); margin-top:1px; }
+/* ── OTP TREND ─────────────────────────────────── */
+.trend-chart{display:flex;align-items:flex-end;gap:4px;height:50px}
+.trend-bar{flex:1;border-radius:2px 2px 0 0;background:var(--blue);opacity:.7;min-height:3px;transition:height .5s}
 
-.hdr-right { display:flex; align-items:center; gap:10px; }
+/* ── Scrollbar ─────────────────────────────────── */
+::-webkit-scrollbar{width:4px}
+::-webkit-scrollbar-track{background:transparent}
+::-webkit-scrollbar-thumb{background:var(--border);border-radius:2px}
 
-.live-pill {
-  display:flex; align-items:center; gap:5px;
-  background:rgba(34,197,94,0.12); border:1px solid rgba(34,197,94,0.28);
-  border-radius:20px; padding:4px 10px;
-  font-size:10px; font-weight:700; color:var(--green);
-}
-.live-dot { width:6px; height:6px; background:var(--green); border-radius:50%; animation:blink 1.4s infinite; }
-@keyframes blink { 0%,100%{opacity:1} 50%{opacity:.3} }
-
-.clock { font-family:'IBM Plex Mono',monospace; font-size:13px; color:var(--cyan); font-weight:600; letter-spacing:1px; }
-
-/* ── BOTTOM TAB NAV (mobile) ──────────────────── */
-.tab-nav {
-  position: fixed; bottom:0; left:0; right:0;
-  background: var(--bg2);
-  border-top: 1px solid var(--border);
-  display: flex;
-  z-index: 200;
-  height: 60px;
-  padding-bottom: env(safe-area-inset-bottom);
-}
-
-.tab-btn {
-  flex:1; display:flex; flex-direction:column; align-items:center; justify-content:center;
-  gap:3px; cursor:pointer; background:none; border:none; color:var(--muted);
-  font-family:'IBM Plex Sans Thai',sans-serif; font-size:10px; font-weight:500;
-  transition: color .15s;
-  -webkit-tap-highlight-color: transparent;
-}
-.tab-btn.active { color:var(--blue); }
-.tab-btn .tab-icon { font-size:20px; line-height:1; }
-
-/* ── PAGES ────────────────────────────────────── */
-.page { display:none; padding: 14px 12px 80px; }
-.page.active { display:block; }
-
-/* ── KPI GRID ─────────────────────────────────── */
-.kpi-grid {
-  display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: 10px;
-  margin-bottom: 16px;
-}
-
-.kpi-card {
-  background: var(--card);
-  border: 1px solid var(--border);
-  border-radius: var(--radius);
-  padding: 14px;
-  position: relative;
-  overflow: hidden;
-}
-.kpi-card::after {
-  content:''; position:absolute; top:0; left:0; right:0; height:3px;
-}
-.kpi-card.total::after { background:linear-gradient(90deg,#3b82f6,#06b6d4); }
-.kpi-card.c-red::after    { background:var(--red); }
-.kpi-card.c-orange::after { background:var(--orange); }
-.kpi-card.c-yellow::after { background:var(--yellow); }
-.kpi-card.c-green::after  { background:var(--green); }
-.kpi-card.total { grid-column: span 2; }
-
-.kpi-lbl { font-size:10px; font-weight:700; color:var(--muted); text-transform:uppercase; letter-spacing:.7px; margin-bottom:6px; }
-.kpi-val { font-size:32px; font-weight:700; font-family:'IBM Plex Mono',monospace; line-height:1; }
-.kpi-sub { font-size:10px; color:var(--dim); margin-top:4px; }
-.kpi-card.total .kpi-val { color:var(--cyan); font-size:40px; }
-.kpi-card.c-red .kpi-val    { color:var(--red); }
-.kpi-card.c-orange .kpi-val { color:var(--orange); }
-.kpi-card.c-yellow .kpi-val { color:var(--yellow); }
-.kpi-card.c-green .kpi-val  { color:var(--green); }
-
-/* OTP mini row in total card */
-.otp-row { display:flex; gap:8px; margin-top:10px; flex-wrap:wrap; }
-.otp-item { flex:1; min-width:60px; background:var(--bg2); border-radius:8px; padding:7px 10px; text-align:center; }
-.otp-item-val { font-size:16px; font-weight:700; font-family:'IBM Plex Mono',monospace; }
-.otp-item-lbl { font-size:9px; color:var(--muted); margin-top:2px; }
-
-/* ── SECTION HEADER ───────────────────────────── */
-.sec-hdr {
-  display:flex; align-items:center; justify-content:space-between;
-  margin-bottom:10px; margin-top:4px;
-}
-.sec-hdr h2 { font-size:13px; font-weight:700; color:var(--text); }
-.sec-badge {
-  font-size:10px; font-weight:700;
-  background:rgba(59,130,246,.15); color:var(--blue);
-  border:1px solid rgba(59,130,246,.3); border-radius:10px; padding:2px 9px;
-}
-
-/* ── FILTER PILLS ─────────────────────────────── */
-.pill-row {
-  display:flex; gap:7px; overflow-x:auto; padding-bottom:4px;
-  margin-bottom:12px; scrollbar-width:none;
-}
-.pill-row::-webkit-scrollbar { display:none; }
-
-.pill {
-  flex-shrink:0; padding:6px 14px; border-radius:20px;
-  border:1px solid var(--border); background:transparent;
-  color:var(--muted); font-size:12px; font-weight:600;
-  cursor:pointer; font-family:'IBM Plex Sans Thai',sans-serif;
-  white-space:nowrap; transition: all .15s;
-}
-.pill.active       { background:var(--blue); border-color:var(--blue); color:#fff; }
-.pill.pr.active    { background:var(--red); border-color:var(--red); color:#fff; }
-.pill.po.active    { background:var(--orange); border-color:var(--orange); color:#fff; }
-.pill.py.active    { background:var(--yellow); border-color:var(--yellow); color:#000; }
-.pill.pg.active    { background:var(--green); border-color:var(--green); color:#000; }
-
-/* ── FLIGHT CARDS ─────────────────────────────── */
-.flight-list { display:flex; flex-direction:column; gap:9px; }
-
-.flight-card {
-  background:var(--card); border:1px solid var(--border);
-  border-radius:var(--radius); padding:13px 14px;
-  cursor:pointer; transition: all .15s; active:opacity:.8;
-  border-left: 4px solid transparent;
-}
-.flight-card:active { background:var(--card2); }
-.flight-card.sel { border-left-color:var(--blue); background:var(--card2); }
-
-.fc-top { display:flex; align-items:flex-start; justify-content:space-between; margin-bottom:8px; }
-
-.fc-flight { font-family:'IBM Plex Mono',monospace; font-size:17px; font-weight:700; color:var(--cyan); }
-.fc-al { display:inline-block; font-size:10px; font-weight:700; background:rgba(59,130,246,.15); color:#93c5fd; border-radius:5px; padding:2px 7px; margin-top:3px; }
-
-.risk-circle {
-  width:52px; height:52px; border-radius:50%;
-  display:flex; flex-direction:column; align-items:center; justify-content:center;
-  border:3px solid; font-family:'IBM Plex Mono',monospace; font-weight:700;
-  font-size:15px; line-height:1.1; flex-shrink:0;
-}
-.risk-lbl-sm { font-size:8px; font-family:'IBM Plex Sans Thai',sans-serif; font-weight:500; }
-
-.fc-mid {
-  display:grid; grid-template-columns:1fr 1fr 1fr;
-  gap:6px; margin-bottom:8px;
-}
-.fc-info { background:var(--bg2); border-radius:var(--radius-sm); padding:6px 9px; }
-.fc-info-lbl { font-size:9px; color:var(--muted); text-transform:uppercase; letter-spacing:.4px; }
-.fc-info-val { font-size:12px; font-weight:600; font-family:'IBM Plex Mono',monospace; margin-top:1px; }
-
-.fc-factors {
-  display:flex; gap:5px; flex-wrap:wrap;
-}
-.fc-factor {
-  font-size:10px; padding:3px 8px; border-radius:10px;
-  background:rgba(255,255,255,.05); color:var(--muted);
-  border:1px solid var(--border); white-space:nowrap;
-}
-
-/* risk colours */
-.rh { --rc:var(--red);    --rb:var(--red-bg); }
-.ro { --rc:var(--orange); --rb:var(--orange-bg); }
-.ry { --rc:var(--yellow); --rb:var(--yellow-bg); }
-.rg { --rc:var(--green);  --rb:var(--green-bg); }
-
-.risk-circle { border-color:var(--rc); color:var(--rc); }
-
-/* ── DETAIL PAGE ──────────────────────────────── */
-.back-btn {
-  display:flex; align-items:center; gap:6px;
-  background:var(--card); border:1px solid var(--border);
-  border-radius:10px; padding:8px 14px; margin-bottom:14px;
-  cursor:pointer; font-size:13px; color:var(--muted); font-family:'IBM Plex Sans Thai',sans-serif;
-}
-
-.detail-hero {
-  background:var(--card); border:1px solid var(--border);
-  border-radius:var(--radius); padding:18px;
-  display:flex; align-items:center; justify-content:space-between;
-  margin-bottom:12px;
-}
-.detail-flight-num { font-family:'IBM Plex Mono',monospace; font-size:26px; font-weight:700; color:var(--cyan); }
-.detail-sub { font-size:12px; color:var(--muted); margin-top:4px; }
-
-.big-circle {
-  width:72px; height:72px; border-radius:50%;
-  display:flex; flex-direction:column; align-items:center; justify-content:center;
-  border:4px solid; font-weight:700; font-family:'IBM Plex Mono',monospace;
-  font-size:20px; line-height:1.1;
-}
-.big-lbl { font-size:9px; font-family:'IBM Plex Sans Thai',sans-serif; font-weight:500; }
-
-.info-grid {
-  display:grid; grid-template-columns:1fr 1fr;
-  gap:8px; margin-bottom:12px;
-}
-.info-cell { background:var(--card); border:1px solid var(--border); border-radius:var(--radius-sm); padding:10px 12px; }
-.info-lbl { font-size:9px; color:var(--muted); text-transform:uppercase; letter-spacing:.5px; margin-bottom:3px; }
-.info-val { font-size:14px; font-weight:600; font-family:'IBM Plex Mono',monospace; }
-
-.factor-section { background:var(--card); border:1px solid var(--border); border-radius:var(--radius); padding:14px; margin-bottom:12px; }
-.fs-title { font-size:11px; font-weight:700; color:var(--muted); text-transform:uppercase; letter-spacing:.7px; margin-bottom:10px; }
-
-.fbar-row { display:flex; align-items:center; gap:8px; margin-bottom:7px; }
-.fbar-lbl { width:100px; font-size:11px; color:var(--muted); white-space:nowrap; overflow:hidden; text-overflow:ellipsis; flex-shrink:0; }
-.fbar-track { flex:1; height:7px; background:rgba(255,255,255,.07); border-radius:4px; }
-.fbar-fill { height:100%; border-radius:4px; }
-.fbar-val { width:28px; text-align:right; font-size:11px; font-family:'IBM Plex Mono',monospace; font-weight:600; }
-
-.factor-tags { display:flex; gap:6px; flex-wrap:wrap; }
-.factor-tag {
-  display:flex; align-items:center; gap:5px;
-  background:var(--bg2); border:1px solid var(--border);
-  border-radius:var(--radius-sm); padding:7px 10px;
-  font-size:12px; color:var(--text);
-}
-
-.rec-section {
-  background:rgba(59,130,246,.07); border:1px solid rgba(59,130,246,.2);
-  border-radius:var(--radius); padding:14px; margin-bottom:12px;
-}
-.rec-title { font-size:11px; font-weight:700; color:var(--blue); text-transform:uppercase; letter-spacing:.7px; margin-bottom:8px; }
-.rec-item { font-size:13px; color:var(--text); margin-bottom:6px; padding-left:16px; position:relative; line-height:1.5; }
-.rec-item::before { content:'›'; position:absolute; left:3px; color:var(--blue); font-weight:700; }
-
-/* ── WEATHER PAGE ─────────────────────────────── */
-.weather-hero {
-  background:linear-gradient(135deg,#0f2060,#0d3b6e);
-  border:1px solid var(--border2); border-radius:var(--radius);
-  padding:20px; margin-bottom:12px;
-  display:flex; align-items:center; justify-content:space-between;
-}
-.w-main-temp { font-size:48px; font-weight:700; font-family:'IBM Plex Mono',monospace; color:#fff; line-height:1; }
-.w-main-cond { font-size:14px; color:#93c5fd; margin-top:4px; }
-.w-icon { font-size:64px; }
-
-.w-grid { display:grid; grid-template-columns:1fr 1fr; gap:10px; margin-bottom:12px; }
-.w-cell { background:var(--card); border:1px solid var(--border); border-radius:var(--radius-sm); padding:12px; text-align:center; }
-.w-val { font-size:22px; font-weight:700; font-family:'IBM Plex Mono',monospace; color:var(--cyan); }
-.w-lbl { font-size:10px; color:var(--muted); margin-top:3px; text-transform:uppercase; }
-
-.impact-banner {
-  background:var(--orange-bg); border:1px solid rgba(249,115,22,.3);
-  border-radius:var(--radius-sm); padding:12px 14px;
-  font-size:13px; color:var(--orange); display:flex; align-items:center; gap:8px;
-}
-
-/* ── TRAFFIC BAR ──────────────────────────────── */
-.traffic-section { background:var(--card); border:1px solid var(--border); border-radius:var(--radius); padding:14px; margin-top:12px; }
-.tbar-chart { display:flex; align-items:flex-end; gap:4px; height:70px; margin-bottom:6px; }
-.tbar-wrap { flex:1; display:flex; flex-direction:column; align-items:center; gap:2px; height:100%; justify-content:flex-end; }
-.tbar { width:100%; border-radius:3px 3px 0 0; min-height:5px; }
-.tbar-lbl { font-size:8px; color:var(--muted); }
-
-/* ── Scrollbar ────────────────────────────────── */
-::-webkit-scrollbar { width:4px; }
-::-webkit-scrollbar-track { background:transparent; }
-::-webkit-scrollbar-thumb { background:var(--border); border-radius:2px; }
-
-/* ── DESKTOP override (>= 768px) ─────────────── */
-@media (min-width:768px) {
-  .tab-nav { display:none; }
-  .page { padding-bottom: 20px; }
-
-  body { display:flex; flex-direction:column; }
-
-  .desktop-layout {
+/* ── DESKTOP ≥900px ────────────────────────────── */
+@media(min-width:900px){
+  .bottom-nav{display:none}
+  .page,.detail-page{padding-bottom:20px !important}
+  .app-body{
     display:grid;
-    grid-template-columns: 1fr 360px;
+    grid-template-columns:320px 1fr 320px;
     gap:0;
-    flex:1;
+    min-height:calc(100vh - 58px - 36px);
+    position:relative;z-index:1;
   }
-
-  .page-flights { display:block !important; padding:18px; border-right:1px solid var(--border); }
-  .page-weather { display:block !important; padding:18px; background:var(--bg2); overflow-y:auto; }
-  .page-detail  { display:none !important; }
-  .page-summary { display:none !important; }
-
-  .kpi-grid { grid-template-columns:repeat(5,1fr); }
-  .kpi-card.total { grid-column:auto; }
-  .kpi-card.total .kpi-val { font-size:32px; }
-
-  .flight-card .fc-mid { grid-template-columns:repeat(4,1fr); }
-
-  /* show detail as side overlay */
-  .desktop-detail-overlay {
-    display:block;
-    position:fixed; top:56px; right:0; bottom:0; width:380px;
-    background:var(--bg2); border-left:1px solid var(--border2);
-    overflow-y:auto; padding:16px; z-index:150;
-    transform:translateX(100%); transition:transform .25s;
+  .page-dep{display:block!important;border-right:1px solid var(--border);padding:14px;overflow-y:auto;height:calc(100vh - 58px - 36px)}
+  .page-center{display:block!important;padding:14px;overflow-y:auto;height:calc(100vh - 58px - 36px)}
+  .page-arr{display:block!important;border-left:1px solid var(--border);padding:14px;overflow-y:auto;height:calc(100vh - 58px - 36px)}
+  .page-kpi{display:none!important}
+  .page-pax{display:none!important}
+  .page-ai{display:none!important}
+  .detail-page{display:none!important}
+  .kpi-grid{grid-template-columns:repeat(2,1fr)}
+  .fc-mid{grid-template-columns:repeat(3,1fr)}
+  .ac-mid{grid-template-columns:repeat(4,1fr)}
+  .desktop-kpi{
+    display:grid!important;
+    grid-template-columns:repeat(6,1fr);
+    gap:10px;padding:10px 14px;
+    background:rgba(4,13,30,.8);border-bottom:1px solid var(--border);
+    position:sticky;top:58px;z-index:100;backdrop-filter:blur(10px);
   }
-  .desktop-detail-overlay.open { transform:translateX(0); }
-
-  .close-overlay {
-    display:flex; align-items:center; gap:6px;
-    background:var(--card); border:1px solid var(--border);
-    border-radius:10px; padding:8px 14px; margin-bottom:14px;
-    cursor:pointer; font-size:13px; color:var(--muted);
-    font-family:'IBM Plex Sans Thai',sans-serif; border:none;
-  }
+  .desktop-kpi .kpi{border-radius:var(--r3);padding:10px 12px}
+  .desktop-kpi .kpi-val{font-size:20px}
+}
+@media(max-width:899px){
+  .desktop-kpi{display:none}
+  .app-body{display:block}
 }
 </style>
 </head>
 <body>
 
 <!-- HEADER -->
-<header class="header">
-  <div class="hdr-left">
-    <div class="logo">✈</div>
-    <div class="hdr-title">
-      <h1>AI Flight Risk Index</h1>
-      <p>BKK A-CDM · 10 ก.ค. 2569</p>
+<header class="hdr">
+  <div class="hdr-l">
+    <div class="hdr-logo">✈</div>
+    <div class="hdr-txt">
+      <h1>BKK · AI Predictive Operations Dashboard</h1>
+      <p>Airport Operations Center (APOC) · Suvarnabhumi Airport · A-CDM Integrated</p>
     </div>
   </div>
-  <div class="hdr-right">
-    <div class="live-pill"><div class="live-dot"></div>LIVE</div>
-    <div class="clock" id="clock">--:--</div>
+  <div class="hdr-r">
+    <div class="live-badge"><div class="ldot"></div>LIVE</div>
+    <div>
+      <div class="hdr-clock" id="clock">--:--:--</div>
+      <div class="hdr-date">16 กรกฎาคม 2569 · BKK Local (UTC+7)</div>
+    </div>
   </div>
 </header>
 
-<!-- DESKTOP LAYOUT WRAPPER -->
-<div class="desktop-layout">
-
-<!-- ── PAGE: SUMMARY ──────────────────────────── -->
-<div class="page page-summary active" id="page-summary">
-
-  <div class="kpi-grid" id="kpiGrid"></div>
-
-  <div class="sec-hdr">
-    <h2>📊 Risk Distribution</h2>
-  </div>
-
-  <!-- Mini bar chart -->
-  <div style="background:var(--card);border:1px solid var(--border);border-radius:var(--radius);padding:16px;margin-bottom:16px;">
-    <div id="distChart" style="display:flex;gap:6px;align-items:flex-end;height:80px;margin-bottom:8px;"></div>
-    <div id="distLbls" style="display:flex;gap:6px;"></div>
-  </div>
-
-  <!-- Traffic -->
-  <div class="traffic-section">
-    <div class="fs-title">🚦 Traffic Density ต่อชั่วโมง</div>
-    <div class="tbar-chart" id="trafficBars"></div>
-    <div id="trafficLbls" style="display:flex;gap:4px;"></div>
-  </div>
-
+<!-- ALERT BANNER -->
+<div class="alert-bar">
+  <span class="alert-badge">⚠ ALERT</span>
+  <div class="alert-scroll" id="alertScroll"></div>
 </div>
 
-<!-- ── PAGE: FLIGHTS ───────────────────────────── -->
-<div class="page page-flights" id="page-flights">
+<!-- DESKTOP KPI BAR -->
+<div class="desktop-kpi" id="desktopKpi"></div>
 
-  <div class="sec-hdr">
-    <h2>✈ เที่ยวบิน</h2>
-    <span class="sec-badge" id="flightBadge">0</span>
-  </div>
+<!-- APP BODY -->
+<div class="app-body">
 
-  <div class="pill-row">
-    <button class="pill active" onclick="setFilter('all',this)">ทั้งหมด</button>
-    <button class="pill pr" onclick="setFilter('high',this)">🔴 High Risk</button>
-    <button class="pill po" onclick="setFilter('mh',this)">🟠 ควรติดตาม</button>
-    <button class="pill py" onclick="setFilter('ml',this)">🟡 เฝ้าระวัง</button>
-    <button class="pill pg" onclick="setFilter('low',this)">🟢 ปกติ</button>
-  </div>
-
-  <div class="flight-list" id="flightList"></div>
-</div>
-
-<!-- ── PAGE: WEATHER ───────────────────────────── -->
-<div class="page page-weather" id="page-weather">
-
-  <div class="weather-hero">
-    <div>
-      <div style="font-size:11px;color:#93c5fd;margin-bottom:4px;font-weight:600;">VTBS · สุวรรณภูมิ</div>
-      <div class="w-main-temp">31°C</div>
-      <div class="w-main-cond">⛈ ฝนตกปานกลาง · CB</div>
-      <div style="font-size:11px;color:var(--muted);margin-top:6px;">Wind 160° / 12 kt Gust 22 kt</div>
+  <!-- LEFT: DEPARTURE RISK -->
+  <div class="page page-dep active" id="page-dep">
+    <div class="sh" style="margin-bottom:8px">
+      <h2>🛫 AI Departure Risk</h2>
+      <span class="sh-badge" id="depBadge">—</span>
     </div>
-    <div class="w-icon">⛈</div>
+    <div style="display:flex;gap:6px;overflow-x:auto;padding-bottom:6px;margin-bottom:10px;scrollbar-width:none">
+      <button class="badge b-blue" style="cursor:pointer;padding:5px 12px;white-space:nowrap" onclick="dFilter('all',this)">All</button>
+      <button class="badge b-red" style="cursor:pointer;padding:5px 12px;white-space:nowrap" onclick="dFilter('h',this)">🔴 Critical</button>
+      <button class="badge b-orange" style="cursor:pointer;padding:5px 12px;white-space:nowrap" onclick="dFilter('o',this)">🟠 High</button>
+      <button class="badge b-yellow" style="cursor:pointer;padding:5px 12px;white-space:nowrap" onclick="dFilter('y',this)">🟡 Med</button>
+      <button class="badge b-green" style="cursor:pointer;padding:5px 12px;white-space:nowrap" onclick="dFilter('g',this)">🟢 Low</button>
+    </div>
+    <div class="fc-list" id="depList"></div>
   </div>
 
-  <div class="w-grid">
-    <div class="w-cell"><div class="w-val">4.8</div><div class="w-lbl">Visibility (km)</div></div>
-    <div class="w-cell"><div class="w-val">22</div><div class="w-lbl">Wind Gust (kt)</div></div>
-    <div class="w-cell"><div class="w-val">78%</div><div class="w-lbl">Humidity</div></div>
-    <div class="w-cell"><div class="w-val">CB</div><div class="w-lbl">Cloud Type</div></div>
-    <div class="w-cell"><div class="w-val">QNH</div><div class="w-lbl" style="font-size:9px">1008 hPa</div></div>
-    <div class="w-cell"><div class="w-val">IFR</div><div class="w-lbl">Conditions</div></div>
+  <!-- CENTER -->
+  <div class="page page-center" id="page-center">
+
+    <!-- Airport Map -->
+    <div class="sh"><h2>🗺 Airport Operations Map</h2><span class="sh-badge">VTBS · BKK</span></div>
+    <div class="map-wrap" style="margin-bottom:14px">
+      <svg class="map-svg" viewBox="0 0 700 380" xmlns="http://www.w3.org/2000/svg">
+        <!-- BG -->
+        <rect width="700" height="380" fill="#04091a"/>
+        <rect width="700" height="380" fill="url(#gridPat)" opacity=".3"/>
+        <defs>
+          <pattern id="gridPat" width="20" height="20" patternUnits="userSpaceOnUse">
+            <path d="M20 0L0 0 0 20" fill="none" stroke="rgba(59,130,246,.15)" stroke-width=".5"/>
+          </pattern>
+          <filter id="glow"><feGaussianBlur stdDeviation="2" result="blur"/><feMerge><feMergeNode in="blur"/><feMergeNode in="SourceGraphic"/></feMerge></filter>
+        </defs>
+
+        <!-- RUNWAY 1 (19L/01R) -->
+        <g filter="url(#glow)">
+          <rect x="60" y="30" width="580" height="28" rx="4" fill="rgba(30,58,138,.5)" stroke="#3b82f6" stroke-width="1"/>
+          <line x1="350" y1="30" x2="350" y2="58" stroke="rgba(255,255,255,.5)" stroke-width="1" stroke-dasharray="5,5"/>
+          <text x="70" y="22" fill="#60a5fa" font-size="9" font-family="JetBrains Mono,monospace" font-weight="600">01L</text>
+          <text x="610" y="22" fill="#60a5fa" font-size="9" font-family="JetBrains Mono,monospace" font-weight="600">19R</text>
+          <text x="340" y="48" fill="rgba(255,255,255,.7)" font-size="8" font-family="JetBrains Mono,monospace">RWY 01L/19R</text>
+        </g>
+
+        <!-- RUNWAY 2 (19R/01L) -->
+        <g filter="url(#glow)">
+          <rect x="60" y="80" width="580" height="28" rx="4" fill="rgba(30,58,138,.5)" stroke="#3b82f6" stroke-width="1"/>
+          <line x1="350" y1="80" x2="350" y2="108" stroke="rgba(255,255,255,.5)" stroke-width="1" stroke-dasharray="5,5"/>
+          <text x="70" y="75" fill="#60a5fa" font-size="9" font-family="JetBrains Mono,monospace" font-weight="600">01R</text>
+          <text x="610" y="75" fill="#60a5fa" font-size="9" font-family="JetBrains Mono,monospace" font-weight="600">19L</text>
+          <text x="340" y="98" fill="rgba(255,255,255,.7)" font-size="8" font-family="JetBrains Mono,monospace">RWY 01R/19L</text>
+        </g>
+
+        <!-- TAXIWAYS -->
+        <line x1="350" y1="58" x2="350" y2="80" stroke="#f97316" stroke-width="2" opacity=".5"/>
+        <line x1="150" y1="58" x2="150" y2="130" stroke="#f97316" stroke-width="1.5" opacity=".4"/>
+        <line x1="250" y1="58" x2="250" y2="130" stroke="#f97316" stroke-width="1.5" opacity=".4"/>
+        <line x1="450" y1="58" x2="450" y2="130" stroke="#f97316" stroke-width="1.5" opacity=".4"/>
+        <line x1="550" y1="58" x2="550" y2="130" stroke="#f97316" stroke-width="1.5" opacity=".4"/>
+        <line x1="100" y1="130" x2="600" y2="130" stroke="#f97316" stroke-width="2" opacity=".5"/>
+
+        <!-- TERMINAL BUILDING -->
+        <rect x="200" y="155" width="300" height="80" rx="6" fill="rgba(30,58,138,.35)" stroke="#3b82f6" stroke-width="1.5"/>
+        <text x="350" y="185" text-anchor="middle" fill="#93c5fd" font-size="10" font-family="Inter,sans-serif" font-weight="700">TERMINAL MAIN</text>
+        <text x="350" y="200" text-anchor="middle" fill="#5a7aab" font-size="8" font-family="Inter,sans-serif">Suvarnabhumi Airport (BKK/VTBS)</text>
+        <!-- Concourse lines -->
+        <line x1="200" y1="155" x2="80" y2="155" stroke="#1e3a8a" stroke-width="2"/>
+        <line x1="500" y1="155" x2="620" y2="155" stroke="#1e3a8a" stroke-width="2"/>
+        <line x1="200" y1="235" x2="80" y2="235" stroke="#1e3a8a" stroke-width="2"/>
+        <line x1="500" y1="235" x2="620" y2="235" stroke="#1e3a8a" stroke-width="2"/>
+
+        <!-- CONTACT STANDS - Left Pier C/D/E -->
+        <g id="cStandsLeft">
+          <rect x="55" y="145" width="30" height="14" rx="2" fill="rgba(34,197,94,.35)" stroke="#22c55e" stroke-width=".8"/>
+          <rect x="55" y="165" width="30" height="14" rx="2" fill="rgba(34,197,94,.35)" stroke="#22c55e" stroke-width=".8"/>
+          <rect x="55" y="185" width="30" height="14" rx="2" fill="rgba(34,197,94,.35)" stroke="#22c55e" stroke-width=".8"/>
+          <rect x="55" y="205" width="30" height="14" rx="2" fill="rgba(249,115,22,.3)" stroke="#f97316" stroke-width=".8"/>
+          <rect x="55" y="225" width="30" height="14" rx="2" fill="rgba(34,197,94,.35)" stroke="#22c55e" stroke-width=".8"/>
+          <text x="40" y="155" fill="#22c55e" font-size="7" font-family="JetBrains Mono,monospace">C1</text>
+          <text x="40" y="175" fill="#22c55e" font-size="7" font-family="JetBrains Mono,monospace">C2</text>
+          <text x="40" y="195" fill="#22c55e" font-size="7" font-family="JetBrains Mono,monospace">D1</text>
+          <text x="40" y="215" fill="#f97316" font-size="7" font-family="JetBrains Mono,monospace">D2</text>
+          <text x="40" y="232" fill="#22c55e" font-size="7" font-family="JetBrains Mono,monospace">E1</text>
+        </g>
+
+        <!-- CONTACT STANDS - Right Pier F/G -->
+        <g id="cStandsRight">
+          <rect x="615" y="145" width="30" height="14" rx="2" fill="rgba(34,197,94,.35)" stroke="#22c55e" stroke-width=".8"/>
+          <rect x="615" y="165" width="30" height="14" rx="2" fill="rgba(239,68,68,.3)" stroke="#ef4444" stroke-width=".8"/>
+          <rect x="615" y="185" width="30" height="14" rx="2" fill="rgba(34,197,94,.35)" stroke="#22c55e" stroke-width=".8"/>
+          <rect x="615" y="205" width="30" height="14" rx="2" fill="rgba(34,197,94,.35)" stroke="#22c55e" stroke-width=".8"/>
+          <rect x="615" y="225" width="30" height="14" rx="2" fill="rgba(249,115,22,.3)" stroke="#f97316" stroke-width=".8"/>
+          <text x="648" y="155" fill="#22c55e" font-size="7" font-family="JetBrains Mono,monospace">F1</text>
+          <text x="648" y="175" fill="#ef4444" font-size="7" font-family="JetBrains Mono,monospace">G1</text>
+          <text x="648" y="195" fill="#22c55e" font-size="7" font-family="JetBrains Mono,monospace">G2</text>
+          <text x="648" y="215" fill="#22c55e" font-size="7" font-family="JetBrains Mono,monospace">H1</text>
+          <text x="648" y="232" fill="#f97316" font-size="7" font-family="JetBrains Mono,monospace">H2</text>
+        </g>
+
+        <!-- REMOTE STANDS AREA -->
+        <rect x="110" y="275" width="480" height="60" rx="4" fill="rgba(6,18,40,.6)" stroke="rgba(59,130,246,.2)" stroke-width="1" stroke-dasharray="4,3"/>
+        <text x="200" y="268" fill="#5a7aab" font-size="8" font-family="Inter,sans-serif">REMOTE STAND AREA</text>
+        <!-- Remote stand dots -->
+        <g fill="none">
+          <rect x="125" y="283" width="22" height="12" rx="2" fill="rgba(168,85,247,.25)" stroke="#a855f7" stroke-width=".7"/>
+          <rect x="155" y="283" width="22" height="12" rx="2" fill="rgba(168,85,247,.25)" stroke="#a855f7" stroke-width=".7"/>
+          <rect x="185" y="283" width="22" height="12" rx="2" fill="rgba(249,115,22,.2)" stroke="#f97316" stroke-width=".7"/>
+          <rect x="215" y="283" width="22" height="12" rx="2" fill="rgba(168,85,247,.25)" stroke="#a855f7" stroke-width=".7"/>
+          <rect x="245" y="283" width="22" height="12" rx="2" fill="rgba(168,85,247,.25)" stroke="#a855f7" stroke-width=".7"/>
+          <rect x="275" y="283" width="22" height="12" rx="2" fill="rgba(239,68,68,.2)" stroke="#ef4444" stroke-width=".7"/>
+          <rect x="305" y="283" width="22" height="12" rx="2" fill="rgba(168,85,247,.25)" stroke="#a855f7" stroke-width=".7"/>
+          <rect x="335" y="283" width="22" height="12" rx="2" fill="rgba(168,85,247,.25)" stroke="#a855f7" stroke-width=".7"/>
+          <rect x="365" y="283" width="22" height="12" rx="2" fill="rgba(168,85,247,.25)" stroke="#a855f7" stroke-width=".7"/>
+          <rect x="395" y="283" width="22" height="12" rx="2" fill="rgba(34,197,94,.15)" stroke="#22c55e" stroke-width=".7"/>
+          <rect x="425" y="283" width="22" height="12" rx="2" fill="rgba(168,85,247,.25)" stroke="#a855f7" stroke-width=".7"/>
+          <rect x="455" y="283" width="22" height="12" rx="2" fill="rgba(249,115,22,.2)" stroke="#f97316" stroke-width=".7"/>
+          <rect x="485" y="283" width="22" height="12" rx="2" fill="rgba(168,85,247,.25)" stroke="#a855f7" stroke-width=".7"/>
+          <rect x="515" y="283" width="22" height="12" rx="2" fill="rgba(168,85,247,.25)" stroke="#a855f7" stroke-width=".7"/>
+          <rect x="545" y="283" width="22" height="12" rx="2" fill="rgba(34,197,94,.15)" stroke="#22c55e" stroke-width=".7"/>
+        </g>
+        <!-- Aircraft icons on taxiways -->
+        <text x="145" y="127" fill="#22d3ee" font-size="10" filter="url(#glow)">✈</text>
+        <text x="345" y="77" fill="#f97316" font-size="10" filter="url(#glow)" transform="rotate(180,350,77)">✈</text>
+        <text x="545" y="55" fill="#22d3ee" font-size="10" filter="url(#glow)">✈</text>
+        <text x="245" y="127" fill="#22c55e" font-size="10" filter="url(#glow)">✈</text>
+
+        <!-- Congestion heatmap overlay -->
+        <ellipse cx="350" cy="130" rx="60" ry="15" fill="rgba(249,115,22,.12)" opacity=".8"/>
+        <ellipse cx="150" cy="130" rx="30" ry="10" fill="rgba(234,179,8,.1)" opacity=".8"/>
+
+        <!-- Labels -->
+        <text x="350" y="345" text-anchor="middle" fill="rgba(34,211,238,.4)" font-size="8" font-family="Inter,sans-serif">SUVARNABHUMI AIRPORT (VTBS/BKK) · 3 RUNWAYS · MAX 76 MOVEMENTS/HR</text>
+      </svg>
+      <div class="map-legend">
+        <div class="ml-item"><div class="ml-dot" style="background:#22c55e"></div>Contact Stand (Free)</div>
+        <div class="ml-item"><div class="ml-dot" style="background:#f97316"></div>Contact (Occupied)</div>
+        <div class="ml-item"><div class="ml-dot" style="background:#ef4444"></div>Contact (Blocked)</div>
+        <div class="ml-item"><div class="ml-dot" style="background:#a855f7"></div>Remote Stand</div>
+        <div class="ml-item"><div class="ml-dot" style="background:#3b82f6"></div>Runway</div>
+        <div class="ml-item"><div class="ml-dot" style="background:#f97316;opacity:.5"></div>Taxiway</div>
+      </div>
+    </div>
+
+    <!-- Hourly Chart -->
+    <div class="chart-wrap">
+      <div class="sh" style="margin-bottom:4px"><h2>📊 Hourly Traffic Demand</h2><span class="sh-badge">CAP 76/hr</span></div>
+      <div style="position:relative">
+        <div class="bar-chart" id="hourlyChart"></div>
+      </div>
+      <div id="hourlyLbls" style="display:flex;gap:2px;margin-top:2px"></div>
+      <div style="display:flex;gap:12px;margin-top:8px;flex-wrap:wrap">
+        <div style="display:flex;align-items:center;gap:5px;font-size:10px;color:var(--muted)"><div style="width:10px;height:10px;background:#3b82f6;border-radius:2px"></div>Departure</div>
+        <div style="display:flex;align-items:center;gap:5px;font-size:10px;color:var(--muted)"><div style="width:10px;height:10px;background:#22d3ee;border-radius:2px"></div>Arrival</div>
+        <div style="display:flex;align-items:center;gap:5px;font-size:10px;color:var(--muted)"><div style="width:10px;height:10px;background:rgba(239,68,68,.5);border-radius:2px"></div>Peak Alert</div>
+      </div>
+    </div>
+
+    <!-- Runway Capacity -->
+    <div class="rwy-section">
+      <div class="sh" style="margin-bottom:2px"><h2>🛬 Runway Capacity</h2><span class="sh-badge" id="rwyCap">—</span></div>
+      <div class="gauge-wrap">
+        <svg width="200" height="110" viewBox="0 0 200 110">
+          <defs>
+            <linearGradient id="gg" x1="0%" y1="0%" x2="100%" y2="0%">
+              <stop offset="0%" stop-color="#22c55e"/>
+              <stop offset="50%" stop-color="#eab308"/>
+              <stop offset="80%" stop-color="#f97316"/>
+              <stop offset="100%" stop-color="#ef4444"/>
+            </linearGradient>
+          </defs>
+          <path d="M20 95 A80 80 0 0 1 180 95" fill="none" stroke="rgba(255,255,255,.08)" stroke-width="14" stroke-linecap="round"/>
+          <path d="M20 95 A80 80 0 0 1 180 95" fill="none" stroke="url(#gg)" stroke-width="14" stroke-linecap="round" stroke-dasharray="251" stroke-dashoffset="101" id="gaugeArc" opacity=".3"/>
+          <path d="M20 95 A80 80 0 0 1 180 95" fill="none" stroke="url(#gg)" stroke-width="14" stroke-linecap="round" stroke-dasharray="251" id="gaugeFill" stroke-dashoffset="251"/>
+          <text x="100" y="88" text-anchor="middle" fill="var(--cyan)" font-size="22" font-family="JetBrains Mono,monospace" font-weight="700" id="gaugeVal">0</text>
+          <text x="100" y="102" text-anchor="middle" fill="var(--muted)" font-size="9" font-family="Inter,sans-serif">/ 76 max</text>
+          <text x="18" y="108" fill="var(--muted)" font-size="8">0</text>
+          <text x="172" y="108" fill="var(--muted)" font-size="8">76</text>
+        </svg>
+      </div>
+      <div class="rwy-stats" id="rwyStats"></div>
+    </div>
+
+  </div><!-- /center -->
+
+  <!-- RIGHT: ARRIVAL DELAY -->
+  <div class="page page-arr" id="page-arr">
+    <div class="sh" style="margin-bottom:8px">
+      <h2>🛬 Arrival Delay Prediction</h2>
+      <span class="sh-badge" id="arrBadge">—</span>
+    </div>
+    <!-- Weather -->
+    <div class="wx-strip">
+      <div>
+        <div class="wx-main">⛈ 31°C · Thunderstorm</div>
+        <div class="wx-sub">VTBS · Wind 160°/12kt Gust 22kt · VIS 4.8km</div>
+      </div>
+      <div class="wx-metrics">
+        <div class="wx-m"><div class="wx-mv">4.8</div><div class="wx-ml">VIS km</div></div>
+        <div class="wx-m"><div class="wx-mv">22</div><div class="wx-ml">Gust kt</div></div>
+        <div class="wx-m"><div class="wx-mv">IFR</div><div class="wx-ml">Conds</div></div>
+      </div>
+    </div>
+    <div class="ac-list" id="arrList"></div>
   </div>
 
-  <div class="impact-banner">⚠️ สภาพอากาศมีผลต่อความเสี่ยง — เพิ่ม Risk Score 10–20 คะแนนสำหรับเที่ยวบิน Remote Stand</div>
-
-  <div class="traffic-section" style="margin-top:12px;">
-    <div class="fs-title">🚦 Traffic ต่อชั่วโมง</div>
-    <div class="tbar-chart" id="trafficBars2"></div>
-    <div id="trafficLbls2" style="display:flex;gap:4px;margin-top:6px;"></div>
+  <!-- PAGE: KPI (mobile) -->
+  <div class="page page-kpi" id="page-kpi">
+    <div class="kpi-grid" id="mobileKpi"></div>
+    <!-- Passenger Forecast -->
+    <div class="sh" style="margin-top:4px"><h2>👥 Passenger Forecast</h2></div>
+    <div class="pax-hero">
+      <div class="pax-total" id="paxTotal">—</div>
+      <div class="pax-sub">ผู้โดยสารทั้งหมดวันนี้ (Estimated)</div>
+    </div>
+    <div class="pax-grid" id="paxGrid"></div>
+    <!-- Runway mobile -->
+    <div class="sh"><h2>🛬 Runway Utilization</h2></div>
+    <div class="rwy-section">
+      <div class="gauge-wrap">
+        <svg width="180" height="100" viewBox="0 0 200 110">
+          <path d="M20 95 A80 80 0 0 1 180 95" fill="none" stroke="rgba(255,255,255,.08)" stroke-width="14" stroke-linecap="round"/>
+          <path d="M20 95 A80 80 0 0 1 180 95" fill="none" stroke="url(#gg)" stroke-width="14" stroke-linecap="round" stroke-dasharray="251" id="gaugeFill2" stroke-dashoffset="251"/>
+          <text x="100" y="88" text-anchor="middle" fill="var(--cyan)" font-size="22" font-family="JetBrains Mono,monospace" font-weight="700" id="gaugeVal2">0</text>
+          <text x="100" y="102" text-anchor="middle" fill="var(--muted)" font-size="9" font-family="Inter,sans-serif">/ 76 max</text>
+          <text x="18" y="108" fill="var(--muted)" font-size="8">0</text>
+          <text x="172" y="108" fill="var(--muted)" font-size="8">76</text>
+        </svg>
+      </div>
+      <div class="rwy-stats" id="rwyStats2"></div>
+    </div>
+    <!-- AI Recommendations -->
+    <div class="sh" style="margin-top:4px"><h2>🤖 AI Recommendations</h2></div>
+    <div class="rec-list" id="recList"></div>
   </div>
 
-</div>
+  <!-- PAGE: AI RECOMMENDATIONS (mobile) -->
+  <div class="page page-ai" id="page-ai">
+    <div class="sh"><h2>🤖 AI Recommendations</h2><span class="sh-badge" id="aiBadge">—</span></div>
+    <div class="rec-list" id="recListAI"></div>
+    <div style="margin-top:14px">
+      <div class="sh"><h2>📈 OTP Trend (7-Day)</h2></div>
+      <div class="chart-wrap">
+        <div class="trend-chart" id="otpTrend"></div>
+        <div style="display:flex;justify-content:space-between;margin-top:4px;font-size:8px;color:var(--muted)">
+          <span>10 ก.ค.</span><span>11</span><span>12</span><span>13</span><span>14</span><span>15</span><span>16 ก.ค.</span>
+        </div>
+      </div>
+    </div>
+  </div>
 
-<!-- ── PAGE: DETAIL ────────────────────────────── -->
-<div class="page page-detail" id="page-detail">
-  <button class="back-btn" onclick="goBack()">← กลับ</button>
-  <div id="detailContent"></div>
-</div>
+</div><!-- /app-body -->
 
-</div><!-- /desktop-layout -->
-
-<!-- ── DESKTOP DETAIL OVERLAY ─────────────────── -->
-<div class="desktop-detail-overlay" id="desktopOverlay">
-  <button class="close-overlay" onclick="closeOverlay()">✕ ปิด</button>
-  <div id="overlayContent"></div>
-</div>
-
-<!-- ── BOTTOM TAB NAV ──────────────────────────── -->
-<nav class="tab-nav">
-  <button class="tab-btn active" id="tab-summary" onclick="switchTab('summary')">
-    <span class="tab-icon">📊</span><span>ภาพรวม</span>
-  </button>
-  <button class="tab-btn" id="tab-flights" onclick="switchTab('flights')">
-    <span class="tab-icon">✈</span><span>เที่ยวบิน</span>
-  </button>
-  <button class="tab-btn" id="tab-weather" onclick="switchTab('weather')">
-    <span class="tab-icon">🌤</span><span>อากาศ</span>
-  </button>
+<!-- BOTTOM NAV (mobile) -->
+<nav class="bottom-nav">
+  <button class="bnav-btn active" id="bnav-dep" onclick="switchTab('dep')"><span class="bnav-icon">🛫</span>Departure</button>
+  <button class="bnav-btn" id="bnav-center" onclick="switchTab('center')"><span class="bnav-icon">🗺</span>Map</button>
+  <button class="bnav-btn" id="bnav-arr" onclick="switchTab('arr')"><span class="bnav-icon">🛬</span>Arrival</button>
+  <button class="bnav-btn" id="bnav-kpi" onclick="switchTab('kpi')"><span class="bnav-icon">📊</span>KPIs</button>
+  <button class="bnav-btn" id="bnav-ai" onclick="switchTab('ai')"><span class="bnav-icon">🤖</span>AI Rec</button>
 </nav>
 
 <script>
-const FLIGHTS = [{"al": "TG", "flight": "TG 203", "ac": "32Q", "bay": "110R", "gate": "B2B", "sobt": "08:05/10", "eobt": "08:05/10", "aobt": "08:12/10", "atot": "08:30/10", "dest": "HKT", "status": "OPR", "nature": "05", "risk_score": 80, "tobt_changes": 4, "tsat_shifts": 2, "is_remote": true, "is_peak": true, "otp": 68, "eobt_delay": 0, "weather": 18, "factors": ["TOBT เปลี่ยน 4 ครั้ง", "TSAT เลื่อน 2 ครั้ง", "Bay Remote", "ช่วง Peak Hour", "OTP ต่ำ (68%)", "สภาพอากาศ"]}, {"al": "TG", "flight": "TG 960", "ac": "359", "bay": "C1", "gate": "C1", "sobt": "00:30/10", "eobt": "00:30/10", "aobt": "00:42/10", "atot": "00:56/10", "dest": "ARN", "status": "OPR", "nature": "01", "risk_score": 78, "tobt_changes": 5, "tsat_shifts": 3, "is_remote": true, "is_peak": false, "otp": 68, "eobt_delay": 0, "weather": 17, "factors": ["TOBT เปลี่ยน 5 ครั้ง", "TSAT เลื่อน 3 ครั้ง", "Bay Remote", "OTP ต่ำ (68%)", "สภาพอากาศ"]}, {"al": "TG", "flight": "TG 930", "ac": "77W", "bay": "C8", "gate": "C8", "sobt": "00:05/10", "eobt": "00:05/10", "aobt": "00:09/10", "atot": "00:27/10", "dest": "CDG", "status": "OPR", "nature": "01", "risk_score": 77, "tobt_changes": 5, "tsat_shifts": 2, "is_remote": true, "is_peak": false, "otp": 68, "eobt_delay": 0, "weather": 20, "factors": ["TOBT เปลี่ยน 5 ครั้ง", "TSAT เลื่อน 2 ครั้ง", "Bay Remote", "OTP ต่ำ (68%)", "สภาพอากาศ"]}, {"al": "TG", "flight": "TG 560", "ac": "32A", "bay": "114R", "gate": "C2A", "sobt": "07:45/10", "eobt": "07:45/10", "aobt": "07:45/10", "atot": "08:05/10", "dest": "HAN", "status": "OPR", "nature": "01", "risk_score": 74, "tobt_changes": 5, "tsat_shifts": 2, "is_remote": true, "is_peak": true, "otp": 68, "eobt_delay": 0, "weather": 7, "factors": ["TOBT เปลี่ยน 5 ครั้ง", "TSAT เลื่อน 2 ครั้ง", "Bay Remote", "ช่วง Peak Hour", "OTP ต่ำ (68%)"]}, {"al": "TG", "flight": "TG 339", "ac": "320", "bay": "A2", "gate": "C1A", "sobt": "23:35/09", "eobt": "23:35/09", "aobt": "00:07/10", "atot": "00:30/10", "dest": "DAC", "status": "OPR", "nature": "01", "risk_score": 73, "tobt_changes": 5, "tsat_shifts": 3, "is_remote": true, "is_peak": false, "otp": 68, "eobt_delay": 0, "weather": 12, "factors": ["TOBT เปลี่ยน 5 ครั้ง", "TSAT เลื่อน 3 ครั้ง", "Bay Remote", "OTP ต่ำ (68%)"]}, {"al": "3S", "flight": "3S 542", "ac": "77X", "bay": "518", "gate": "", "sobt": "00:10/10", "eobt": "00:10/10", "aobt": "00:02/10", "atot": "00:11/10", "dest": "HKG", "status": "OPR", "nature": "08", "risk_score": 73, "tobt_changes": 5, "tsat_shifts": 2, "is_remote": true, "is_peak": false, "otp": 75, "eobt_delay": 0, "weather": 18, "factors": ["TOBT เปลี่ยน 5 ครั้ง", "TSAT เลื่อน 2 ครั้ง", "Bay Remote", "สภาพอากาศ"]}, {"al": "FM", "flight": "FM 840", "ac": "7M8", "bay": "D1", "gate": "D1", "sobt": "21:55/09", "eobt": "00:50/10", "aobt": "01:04/10", "atot": "01:26/10", "dest": "PVG", "status": "OPR", "nature": "01", "risk_score": 70, "tobt_changes": 3, "tsat_shifts": 3, "is_remote": true, "is_peak": false, "otp": 75, "eobt_delay": 28, "weather": 7, "factors": ["TOBT เปลี่ยน 3 ครั้ง", "TSAT เลื่อน 3 ครั้ง", "Bay Remote", "EOBT เลื่อน +28 นาที"]}, {"al": "VZ", "flight": "VZ 720", "ac": "32A", "bay": "107R", "gate": "D1A", "sobt": "08:40/10", "eobt": "08:40/10", "aobt": "08:34/10", "atot": "08:45/10", "dest": "KTI", "status": "OPR", "nature": "01", "risk_score": 68, "tobt_changes": 5, "tsat_shifts": 1, "is_remote": true, "is_peak": true, "otp": 82, "eobt_delay": 0, "weather": 9, "factors": ["TOBT เปลี่ยน 5 ครั้ง", "Bay Remote", "ช่วง Peak Hour"]}, {"al": "TG", "flight": "TG 682", "ac": "77W", "bay": "C6", "gate": "C6", "sobt": "22:45/10", "eobt": "22:45/10", "aobt": null, "atot": null, "dest": "HND", "status": "OPR", "nature": "01", "risk_score": 67, "tobt_changes": 5, "tsat_shifts": 0, "is_remote": true, "is_peak": false, "otp": 68, "eobt_delay": 0, "weather": 18, "factors": ["TOBT เปลี่ยน 5 ครั้ง", "Bay Remote", "OTP ต่ำ (68%)", "สภาพอากาศ"]}, {"al": "QR", "flight": "QR 829", "ac": "359", "bay": "S117", "gate": "S117A", "sobt": "03:00/10", "eobt": "03:00/10", "aobt": "03:44/10", "atot": "03:59/10", "dest": "DOH", "status": "OPR", "nature": "01", "risk_score": 66, "tobt_changes": 4, "tsat_shifts": 2, "is_remote": true, "is_peak": false, "otp": 88, "eobt_delay": 0, "weather": 20, "factors": ["TOBT เปลี่ยน 4 ครั้ง", "TSAT เลื่อน 2 ครั้ง", "Bay Remote", "สภาพอากาศ"]}, {"al": "PG", "flight": "PG 107", "ac": "319", "bay": "102R", "gate": "A8", "sobt": "07:10/10", "eobt": "07:10/10", "aobt": "07:09/10", "atot": "07:18/10", "dest": "USM", "status": "OPR", "nature": "05", "risk_score": 65, "tobt_changes": 5, "tsat_shifts": 2, "is_remote": true, "is_peak": true, "otp": 91, "eobt_delay": 0, "weather": 5, "factors": ["TOBT เปลี่ยน 5 ครั้ง", "TSAT เลื่อน 2 ครั้ง", "Bay Remote", "ช่วง Peak Hour"]}, {"al": "PG", "flight": "PG 903", "ac": "ATR", "bay": "111L", "gate": "E1A", "sobt": "07:40/10", "eobt": "07:40/10", "aobt": "07:33/10", "atot": "07:40/10", "dest": "SAI", "status": "OPR", "nature": "01", "risk_score": 64, "tobt_changes": 3, "tsat_shifts": 2, "is_remote": true, "is_peak": true, "otp": 91, "eobt_delay": 0, "weather": 14, "factors": ["TOBT เปลี่ยน 3 ครั้ง", "TSAT เลื่อน 2 ครั้ง", "Bay Remote", "ช่วง Peak Hour"]}, {"al": "TG", "flight": "TG 662", "ac": "772", "bay": "S104", "gate": "S104", "sobt": "00:30/10", "eobt": "00:30/10", "aobt": "00:27/10", "atot": "00:44/10", "dest": "PVG", "status": "OPR", "nature": "01", "risk_score": 63, "tobt_changes": 5, "tsat_shifts": 2, "is_remote": true, "is_peak": false, "otp": 68, "eobt_delay": 0, "weather": 6, "factors": ["TOBT เปลี่ยน 5 ครั้ง", "TSAT เลื่อน 2 ครั้ง", "Bay Remote", "OTP ต่ำ (68%)"]}, {"al": "KB", "flight": "KB 141", "ac": "32D", "bay": "F1", "gate": "F1", "sobt": "06:00/10", "eobt": "06:00/10", "aobt": "05:52/10", "atot": "06:08/10", "dest": "GAU", "status": "OPR", "nature": "01", "risk_score": 63, "tobt_changes": 5, "tsat_shifts": 3, "is_remote": true, "is_peak": false, "otp": 75, "eobt_delay": 0, "weather": 4, "factors": ["TOBT เปลี่ยน 5 ครั้ง", "TSAT เลื่อน 3 ครั้ง", "Bay Remote"]}, {"al": "TG", "flight": "TG 970", "ac": "77W", "bay": "C5", "gate": "C5", "sobt": "01:05/10", "eobt": "01:05/10", "aobt": "01:04/10", "atot": "01:24/10", "dest": "ZRH", "status": "OPR", "nature": "01", "risk_score": 61, "tobt_changes": 4, "tsat_shifts": 0, "is_remote": true, "is_peak": false, "otp": 68, "eobt_delay": 0, "weather": 17, "factors": ["TOBT เปลี่ยน 4 ครั้ง", "Bay Remote", "OTP ต่ำ (68%)", "สภาพอากาศ"]}, {"al": "NX", "flight": "NX 995", "ac": "32B", "bay": "S125", "gate": "S125", "sobt": "10:35/10", "eobt": "10:35/10", "aobt": "10:42/10", "atot": "10:56/10", "dest": "MFM", "status": "OPR", "nature": "01", "risk_score": 61, "tobt_changes": 5, "tsat_shifts": 1, "is_remote": true, "is_peak": false, "otp": 75, "eobt_delay": 0, "weather": 10, "factors": ["TOBT เปลี่ยน 5 ครั้ง", "Bay Remote"]}, {"al": "TG", "flight": "TG 954", "ac": "359", "bay": "S103", "gate": "S103", "sobt": "00:05/10", "eobt": "00:05/10", "aobt": "00:08/10", "atot": "00:25/10", "dest": "OSL", "status": "OPR", "nature": "01", "risk_score": 58, "tobt_changes": 5, "tsat_shifts": 1, "is_remote": true, "is_peak": false, "otp": 68, "eobt_delay": 0, "weather": 5, "factors": ["TOBT เปลี่ยน 5 ครั้ง", "Bay Remote", "OTP ต่ำ (68%)"]}, {"al": "VZ", "flight": "VZ 968", "ac": "7M8", "bay": "128R", "gate": "C1A", "sobt": "11:35/10", "eobt": "11:35/10", "aobt": "11:34/10", "atot": "11:48/10", "dest": "CXR", "status": "OPR", "nature": "01", "risk_score": 55, "tobt_changes": 3, "tsat_shifts": 3, "is_remote": true, "is_peak": false, "otp": 82, "eobt_delay": 0, "weather": 8, "factors": ["TOBT เปลี่ยน 3 ครั้ง", "TSAT เลื่อน 3 ครั้ง", "Bay Remote"]}, {"al": "TG", "flight": "TG 415", "ac": "333", "bay": "C9", "gate": "C9", "sobt": "09:05/10", "eobt": "09:05/10", "aobt": "09:18/10", "atot": "09:33/10", "dest": "KUL", "status": "OPR", "nature": "01", "risk_score": 54, "tobt_changes": 2, "tsat_shifts": 1, "is_remote": true, "is_peak": true, "otp": 68, "eobt_delay": 0, "weather": 6, "factors": ["Bay Remote", "ช่วง Peak Hour", "OTP ต่ำ (68%)"]}, {"al": "VZ", "flight": "VZ 320", "ac": "7M8", "bay": "302", "gate": "B8", "sobt": "07:05/10", "eobt": "07:05/10", "aobt": "07:02/10", "atot": "07:15/10", "dest": "HDY", "status": "OPR", "nature": "05", "risk_score": 52, "tobt_changes": 0, "tsat_shifts": 1, "is_remote": true, "is_peak": true, "otp": 82, "eobt_delay": 0, "weather": 18, "factors": ["Bay Remote", "ช่วง Peak Hour", "สภาพอากาศ"]}, {"al": "TG", "flight": "TG 670", "ac": "789", "bay": "C7", "gate": "C7", "sobt": "23:45/09", "eobt": "23:45/09", "aobt": "00:12/10", "atot": "00:37/10", "dest": "CTS", "status": "OPR", "nature": "01", "risk_score": 51, "tobt_changes": 1, "tsat_shifts": 3, "is_remote": true, "is_peak": false, "otp": 68, "eobt_delay": 0, "weather": 10, "factors": ["TSAT เลื่อน 3 ครั้ง", "Bay Remote", "OTP ต่ำ (68%)"]}, {"al": "PG", "flight": "PG 271", "ac": "320", "bay": "A5", "gate": "A5", "sobt": "08:05/10", "eobt": "08:05/10", "aobt": "08:07/10", "atot": "08:22/10", "dest": "HKT", "status": "OPR", "nature": "05", "risk_score": 51, "tobt_changes": 2, "tsat_shifts": 2, "is_remote": true, "is_peak": true, "otp": 91, "eobt_delay": 0, "weather": 6, "factors": ["TSAT เลื่อน 2 ครั้ง", "Bay Remote", "ช่วง Peak Hour"]}, {"al": "TG", "flight": "TG 622", "ac": "333", "bay": "C6", "gate": "C6", "sobt": "23:59/09", "eobt": "23:59/09", "aobt": "00:14/10", "atot": "00:32/10", "dest": "KIX", "status": "OPR", "nature": "01", "risk_score": 49, "tobt_changes": 5, "tsat_shifts": 0, "is_remote": true, "is_peak": false, "otp": 68, "eobt_delay": 0, "weather": 0, "factors": ["TOBT เปลี่ยน 5 ครั้ง", "Bay Remote", "OTP ต่ำ (68%)"]}, {"al": "LY", "flight": "LY 082", "ac": "789", "bay": "E9", "gate": "E9", "sobt": "23:55/09", "eobt": "23:55/09", "aobt": "00:02/10", "atot": "00:13/10", "dest": "TLV", "status": "OPR", "nature": "01", "risk_score": 49, "tobt_changes": 3, "tsat_shifts": 0, "is_remote": true, "is_peak": false, "otp": 72, "eobt_delay": 0, "weather": 11, "factors": ["TOBT เปลี่ยน 3 ครั้ง", "Bay Remote", "OTP ต่ำ (72%)"]}, {"al": "TG", "flight": "TG 934", "ac": "789", "bay": "C9", "gate": "C9", "sobt": "00:05/10", "eobt": "00:05/10", "aobt": "00:19/10", "atot": "00:39/10", "dest": "BRU", "status": "OPR", "nature": "01", "risk_score": 48, "tobt_changes": 1, "tsat_shifts": 3, "is_remote": true, "is_peak": false, "otp": 68, "eobt_delay": 0, "weather": 7, "factors": ["TSAT เลื่อน 3 ครั้ง", "Bay Remote", "OTP ต่ำ (68%)"]}, {"al": "TG", "flight": "TG 249", "ac": "32Q", "bay": "111R", "gate": "B7", "sobt": "18:25/10", "eobt": "18:25/10", "aobt": null, "atot": null, "dest": "KBV", "status": "OPR", "nature": "05", "risk_score": 48, "tobt_changes": 0, "tsat_shifts": 3, "is_remote": true, "is_peak": true, "otp": 68, "eobt_delay": 0, "weather": 2, "factors": ["TSAT เลื่อน 3 ครั้ง", "Bay Remote", "ช่วง Peak Hour", "OTP ต่ำ (68%)"]}, {"al": "PG", "flight": "PG 261", "ac": "319", "bay": "A4", "gate": "A4", "sobt": "07:10/10", "eobt": "07:10/10", "aobt": "07:38/10", "atot": "07:51/10", "dest": "KBV", "status": "OPR", "nature": "05", "risk_score": 48, "tobt_changes": 2, "tsat_shifts": 1, "is_remote": true, "is_peak": true, "otp": 91, "eobt_delay": 0, "weather": 7, "factors": ["Bay Remote", "ช่วง Peak Hour"]}, {"al": "TG", "flight": "TG 644", "ac": "788", "bay": "S105", "gate": "S105", "sobt": "00:05/10", "eobt": "00:05/10", "aobt": "00:14/10", "atot": "00:34/10", "dest": "NGO", "status": "OPR", "nature": "01", "risk_score": 47, "tobt_changes": 3, "tsat_shifts": 2, "is_remote": true, "is_peak": false, "otp": 68, "eobt_delay": 0, "weather": 0, "factors": ["TOBT เปลี่ยน 3 ครั้ง", "TSAT เลื่อน 2 ครั้ง", "Bay Remote", "OTP ต่ำ (68%)"]}, {"al": "PG", "flight": "PG 109", "ac": "ATR", "bay": "112L", "gate": "A9", "sobt": "06:25/10", "eobt": "06:25/10", "aobt": "06:25/10", "atot": "06:32/10", "dest": "USM", "status": "OPR", "nature": "05", "risk_score": 47, "tobt_changes": 2, "tsat_shifts": 3, "is_remote": true, "is_peak": false, "otp": 91, "eobt_delay": 0, "weather": 8, "factors": ["TSAT เลื่อน 3 ครั้ง", "Bay Remote"]}, {"al": "PG", "flight": "PG 215", "ac": "319", "bay": "104R", "gate": "A8", "sobt": "08:00/10", "eobt": "08:00/10", "aobt": "07:52/10", "atot": "08:08/10", "dest": "CNX", "status": "OPR", "nature": "05", "risk_score": 46, "tobt_changes": 1, "tsat_shifts": 3, "is_remote": true, "is_peak": true, "otp": 91, "eobt_delay": 0, "weather": 2, "factors": ["TSAT เลื่อน 3 ครั้ง", "Bay Remote", "ช่วง Peak Hour"]}, {"al": "FM", "flight": "FM 854", "ac": "73H", "bay": "D1", "gate": "D1", "sobt": "11:50/10", "eobt": "11:50/10", "aobt": "11:40/10", "atot": "11:55/10", "dest": "PVG", "status": "OPR", "nature": "01", "risk_score": 43, "tobt_changes": 0, "tsat_shifts": 1, "is_remote": true, "is_peak": false, "otp": 75, "eobt_delay": 0, "weather": 17, "factors": ["Bay Remote", "สภาพอากาศ"]}, {"al": "VZ", "flight": "VZ 760", "ac": "320", "bay": "103R", "gate": "C2A", "sobt": "21:05/10", "eobt": "21:05/10", "aobt": null, "atot": null, "dest": "BOM", "status": "OPR", "nature": "01", "risk_score": 39, "tobt_changes": 2, "tsat_shifts": 2, "is_remote": true, "is_peak": false, "otp": 82, "eobt_delay": 0, "weather": 1, "factors": ["TSAT เลื่อน 2 ครั้ง", "Bay Remote"]}, {"al": "TG", "flight": "TG 102", "ac": "32A", "bay": "106R", "gate": "B7", "sobt": "07:25/10", "eobt": "07:25/10", "aobt": "07:29/10", "atot": "07:38/10", "dest": "CNX", "status": "OPR", "nature": "05", "risk_score": 38, "tobt_changes": 0, "tsat_shifts": 0, "is_remote": true, "is_peak": true, "otp": 68, "eobt_delay": 0, "weather": 4, "factors": ["Bay Remote", "ช่วง Peak Hour", "OTP ต่ำ (68%)"]}, {"al": "TG", "flight": "TG 950", "ac": "77W", "bay": "C2", "gate": "C2", "sobt": "01:10/10", "eobt": "01:10/10", "aobt": "01:15/10", "atot": "01:32/10", "dest": "CPH", "status": "OPR", "nature": "01", "risk_score": 36, "tobt_changes": 1, "tsat_shifts": 1, "is_remote": true, "is_peak": false, "otp": 68, "eobt_delay": 0, "weather": 3, "factors": ["Bay Remote", "OTP ต่ำ (68%)"]}, {"al": "TG", "flight": "TG 642", "ac": "359", "bay": "S107", "gate": "S107", "sobt": "23:50/09", "eobt": "23:50/09", "aobt": "00:01/10", "atot": "00:20/10", "dest": "NRT", "status": "OPR", "nature": "01", "risk_score": 36, "tobt_changes": 2, "tsat_shifts": 0, "is_remote": true, "is_peak": false, "otp": 68, "eobt_delay": 0, "weather": 2, "factors": ["Bay Remote", "OTP ต่ำ (68%)"]}, {"al": "VZ", "flight": "VZ 964", "ac": "7M8", "bay": "S127", "gate": "S127", "sobt": "08:10/10", "eobt": "08:10/10", "aobt": "08:30/10", "atot": "08:44/10", "dest": "DAD", "status": "OPR", "nature": "01", "risk_score": 36, "tobt_changes": 1, "tsat_shifts": 0, "is_remote": true, "is_peak": true, "otp": 82, "eobt_delay": 0, "weather": 1, "factors": ["Bay Remote", "ช่วง Peak Hour"]}, {"al": "PG", "flight": "PG 121", "ac": "319", "bay": "103L", "gate": "A7", "sobt": "07:15/10", "eobt": "07:15/10", "aobt": "07:17/10", "atot": "07:25/10", "dest": "USM", "status": "OPR", "nature": "05", "risk_score": 34, "tobt_changes": 0, "tsat_shifts": 1, "is_remote": true, "is_peak": true, "otp": 91, "eobt_delay": 0, "weather": 3, "factors": ["Bay Remote", "ช่วง Peak Hour"]}, {"al": "QR", "flight": "QR 837", "ac": "388", "bay": "S111", "gate": "S111A", "sobt": "02:30/10", "eobt": "02:30/10", "aobt": "02:29/10", "atot": "02:42/10", "dest": "DOH", "status": "OPR", "nature": "01", "risk_score": 33, "tobt_changes": 3, "tsat_shifts": 0, "is_remote": true, "is_peak": false, "otp": 88, "eobt_delay": 0, "weather": 0, "factors": ["TOBT เปลี่ยน 3 ครั้ง", "Bay Remote"]}, {"al": "EK", "flight": "EK 377", "ac": "388", "bay": "S112", "gate": "S112A", "sobt": "02:50/10", "eobt": "02:50/10", "aobt": "02:48/10", "atot": "03:09/10", "dest": "DXB", "status": "OPR", "nature": "01", "risk_score": 32, "tobt_changes": 0, "tsat_shifts": 1, "is_remote": true, "is_peak": false, "otp": 79, "eobt_delay": 0, "weather": 7, "factors": ["Bay Remote"]}, {"al": "PG", "flight": "PG 115", "ac": "ATR", "bay": "101R", "gate": "A7", "sobt": "09:15/10", "eobt": "09:15/10", "aobt": "09:06/10", "atot": "09:12/10", "dest": "USM", "status": "OPR", "nature": "05", "risk_score": 32, "tobt_changes": 0, "tsat_shifts": 1, "is_remote": true, "is_peak": true, "otp": 91, "eobt_delay": 0, "weather": 1, "factors": ["Bay Remote", "ช่วง Peak Hour"]}];
-const DEST = {"HKT": "ภูเก็ต", "HAN": "ฮานอย", "KIX": "โอซาก้า", "CPH": "โคเปนเฮเกน", "ZRH": "ซูริค", "BRU": "บรัสเซลส์", "NGO": "นาโกย่า", "CTS": "ซัปโปโร", "NRT": "โตเกียว", "TLV": "เทลอาวีฟ", "ARN": "สตอกโฮล์ม", "DOH": "โดฮา", "DXB": "ดูไบ", "KUL": "กัวลาลัมเปอร์", "HND": "โตเกียว", "SAI": "กุยเฉา", "USM": "เกาะสมุย", "DAD": "ดานัง", "KTI": "กาญจนบุรี", "BOM": "มุมไบ", "KBV": "กระบี่", "ISB": "อิสลามาบัด", "DEL": "นิวเดลี", "SIN": "สิงคโปร์"};
+const D = {"dep": [{"flight": "D0 037", "ac": "B763", "dest": "EMA", "bay": "513", "sobt": "03:50", "eobt": "08:00", "tobt": "08:00", "tsat": "08:00", "aobt": "08:03", "sobt_h": 3, "risk": 97, "delay_min": 253, "tobt_changes": 1, "is_remote": true, "otp": 85, "pax": 150, "ftype": "O"}, {"flight": "ZH 306", "ac": "A320", "dest": "SZX", "bay": "G4", "sobt": "03:15", "eobt": "07:00", "tobt": "07:00", "tsat": "06:56", "aobt": "06:57", "sobt_h": 3, "risk": 97, "delay_min": 222, "tobt_changes": 0, "is_remote": true, "otp": 76, "pax": 170, "ftype": "O"}, {"flight": "G9 822", "ac": "A20N", "dest": "SHJ", "bay": "F3", "sobt": "08:55", "eobt": "10:35", "tobt": "11:00", "tsat": "11:21", "aobt": "11:04", "sobt_h": 8, "risk": 97, "delay_min": 129, "tobt_changes": 4, "is_remote": true, "otp": 78, "pax": 170, "ftype": "O"}, {"flight": "AF 199", "ac": "A359", "dest": "CDG", "bay": "E10", "sobt": "11:25", "eobt": "13:45", "tobt": "13:45", "tsat": "13:45", "aobt": "13:52", "sobt_h": 11, "risk": 97, "delay_min": 147, "tobt_changes": 4, "is_remote": true, "otp": 82, "pax": 320, "ftype": "O"}, {"flight": "CZ 8324", "ac": "A21N", "dest": "SZX", "bay": "C8", "sobt": "17:25", "eobt": "22:50", "tobt": "23:30", "tsat": "23:21", "aobt": "23:26", "sobt_h": 17, "risk": 97, "delay_min": 361, "tobt_changes": 0, "is_remote": true, "otp": 86, "pax": 185, "ftype": "O"}, {"flight": "VZ 830", "ac": "B38M", "dest": "NRT", "bay": "A2", "sobt": "23:35", "eobt": "01:30", "tobt": "01:30", "tsat": "02:38", "aobt": "02:42", "sobt_h": 23, "risk": 97, "delay_min": 187, "tobt_changes": 1, "is_remote": true, "otp": 82, "pax": 180, "ftype": "O"}, {"flight": "ZH 308", "ac": "A320", "dest": "SZX", "bay": "F1", "sobt": "19:15", "eobt": "21:00", "tobt": "20:15", "tsat": "21:23", "aobt": "21:20", "sobt_h": 19, "risk": 95, "delay_min": 125, "tobt_changes": 3, "is_remote": true, "otp": 81, "pax": 170, "ftype": "O"}, {"flight": "PR 731", "ac": "A333", "dest": "MNL", "bay": "E10", "sobt": "13:25", "eobt": "14:50", "tobt": "15:11", "tsat": "15:30", "aobt": "15:20", "sobt_h": 13, "risk": 93, "delay_min": 115, "tobt_changes": 4, "is_remote": true, "otp": 75, "pax": 280, "ftype": "O"}, {"flight": "CZ 8024", "ac": "A20N", "dest": "CAN", "bay": "C1", "sobt": "18:05", "eobt": "18:40", "tobt": "18:55", "tsat": "19:18", "aobt": "19:47", "sobt_h": 18, "risk": 91, "delay_min": 102, "tobt_changes": 4, "is_remote": true, "otp": 73, "pax": 170, "ftype": "O"}, {"flight": "KU 414", "ac": "B77W", "dest": "KWI", "bay": "E6", "sobt": "02:20", "eobt": "03:40", "tobt": "03:40", "tsat": "03:40", "aobt": "03:47", "sobt_h": 2, "risk": 90, "delay_min": 87, "tobt_changes": 3, "is_remote": true, "otp": 88, "pax": 350, "ftype": "O"}, {"flight": "CX 3346", "ac": "B744", "dest": "HKG", "bay": "513", "sobt": "16:00", "eobt": "16:00", "tobt": "16:55", "tsat": "16:50", "aobt": "17:49", "sobt_h": 16, "risk": 90, "delay_min": 109, "tobt_changes": 3, "is_remote": true, "otp": 83, "pax": 400, "ftype": "O"}, {"flight": "FM 834", "ac": "B738", "dest": "PVG", "bay": "F5", "sobt": "16:50", "eobt": "17:40", "tobt": "18:34", "tsat": "18:58", "aobt": "18:39", "sobt_h": 16, "risk": 90, "delay_min": 109, "tobt_changes": 3, "is_remote": true, "otp": 92, "pax": 180, "ftype": "O"}, {"flight": "FM 856", "ac": "B38M", "dest": "PVG", "bay": "D7", "sobt": "19:10", "eobt": "19:30", "tobt": "19:30", "tsat": "19:10", "aobt": "20:32", "sobt_h": 19, "risk": 89, "delay_min": 82, "tobt_changes": 4, "is_remote": true, "otp": 76, "pax": 180, "ftype": "O"}, {"flight": "UB 2306", "ac": "B734", "dest": "RGN", "bay": "521", "sobt": "19:55", "eobt": "21:35", "tobt": "21:35", "tsat": "—", "aobt": "22:09", "sobt_h": 19, "risk": 89, "delay_min": 134, "tobt_changes": 2, "is_remote": true, "otp": 82, "pax": 150, "ftype": "O"}, {"flight": "TK 065", "ac": "A333", "dest": "IST", "bay": "S118", "sobt": "11:15", "eobt": "11:50", "tobt": "12:05", "tsat": "12:29", "aobt": "12:09", "sobt_h": 11, "risk": 88, "delay_min": 54, "tobt_changes": 5, "is_remote": true, "otp": 76, "pax": 280, "ftype": "O"}, {"flight": "TG 465", "ac": "A359", "dest": "MEL", "bay": "C8", "sobt": "19:40", "eobt": "20:40", "tobt": "20:59", "tsat": "21:23", "aobt": "21:04", "sobt_h": 19, "risk": 88, "delay_min": 84, "tobt_changes": 5, "is_remote": true, "otp": 68, "pax": 320, "ftype": "O"}, {"flight": "CX 708", "ac": "A21N", "dest": "HKG", "bay": "G5", "sobt": "17:30", "eobt": "17:30", "tobt": "17:30", "tsat": "18:30", "aobt": "18:38", "sobt_h": 17, "risk": 87, "delay_min": 68, "tobt_changes": 4, "is_remote": true, "otp": 83, "pax": 185, "ftype": "O"}, {"flight": "WY 816", "ac": "B789", "dest": "MCT", "bay": "E10", "sobt": "19:10", "eobt": "20:10", "tobt": "20:10", "tsat": "20:16", "aobt": "20:28", "sobt_h": 19, "risk": 87, "delay_min": 78, "tobt_changes": 5, "is_remote": true, "otp": 89, "pax": 296, "ftype": "O"}, {"flight": "VN 618", "ac": "A321", "dest": "HAN", "bay": "F5", "sobt": "19:05", "eobt": "20:20", "tobt": "20:25", "tsat": "20:49", "aobt": "20:25", "sobt_h": 19, "risk": 87, "delay_min": 80, "tobt_changes": 4, "is_remote": true, "otp": 78, "pax": 210, "ftype": "O"}, {"flight": "RH 332", "ac": "A332", "dest": "HKG", "bay": "519", "sobt": "21:00", "eobt": "21:30", "tobt": "22:16", "tsat": "22:23", "aobt": "22:28", "sobt_h": 21, "risk": 87, "delay_min": 88, "tobt_changes": 4, "is_remote": true, "otp": 74, "pax": 260, "ftype": "O"}, {"flight": "CI 6884", "ac": "B744", "dest": "TPE", "bay": "515", "sobt": "09:40", "eobt": "11:00", "tobt": "11:35", "tsat": "11:05", "aobt": "11:09", "sobt_h": 9, "risk": 86, "delay_min": 89, "tobt_changes": 1, "is_remote": true, "otp": 70, "pax": 400, "ftype": "O"}, {"flight": "VN 606", "ac": "A321", "dest": "SGN", "bay": "F6", "sobt": "19:30", "eobt": "20:40", "tobt": "20:40", "tsat": "20:39", "aobt": "20:41", "sobt_h": 19, "risk": 86, "delay_min": 71, "tobt_changes": 5, "is_remote": true, "otp": 76, "pax": 210, "ftype": "O"}, {"flight": "EK 9829", "ac": "B77L", "dest": "DWC", "bay": "520", "sobt": "22:45", "eobt": "22:45", "tobt": "22:45", "tsat": "22:53", "aobt": "00:24", "sobt_h": 22, "risk": 85, "delay_min": 99, "tobt_changes": 2, "is_remote": true, "otp": 79, "pax": 150, "ftype": "O"}, {"flight": "QF 024", "ac": "A333", "dest": "SYD", "bay": "E8", "sobt": "18:10", "eobt": "20:10", "tobt": "20:10", "tsat": "20:23", "aobt": "20:15", "sobt_h": 18, "risk": 84, "delay_min": 125, "tobt_changes": 1, "is_remote": true, "otp": 76, "pax": 280, "ftype": "O"}, {"flight": "8M 332", "ac": "A320", "dest": "RGN", "bay": "C2", "sobt": "19:15", "eobt": "20:30", "tobt": "21:05", "tsat": "21:29", "aobt": "21:05", "sobt_h": 19, "risk": 84, "delay_min": 110, "tobt_changes": 2, "is_remote": true, "otp": 83, "pax": 170, "ftype": "O"}, {"flight": "TG 425", "ac": "A320", "dest": "PEN", "bay": "S101", "sobt": "19:20", "eobt": "19:20", "tobt": "19:47", "tsat": "20:11", "aobt": "20:12", "sobt_h": 19, "risk": 84, "delay_min": 52, "tobt_changes": 5, "is_remote": true, "otp": 68, "pax": 170, "ftype": "O"}, {"flight": "VZ 3718", "ac": "B38M", "dest": "PKX", "bay": "S127", "sobt": "18:40", "eobt": "19:55", "tobt": "19:15", "tsat": "19:36", "aobt": "19:56", "sobt_h": 18, "risk": 83, "delay_min": 76, "tobt_changes": 5, "is_remote": true, "otp": 82, "pax": 180, "ftype": "O"}, {"flight": "8M 353", "ac": "B734", "dest": "RGN", "bay": "523", "sobt": "19:20", "eobt": "21:00", "tobt": "21:30", "tsat": "21:42", "aobt": "21:44", "sobt_h": 19, "risk": 83, "delay_min": 144, "tobt_changes": 2, "is_remote": true, "otp": 85, "pax": 150, "ftype": "O"}, {"flight": "VZ 3732", "ac": "B38M", "dest": "MFM", "bay": "S127", "sobt": "17:00", "eobt": "17:00", "tobt": "17:45", "tsat": "17:49", "aobt": "17:52", "sobt_h": 17, "risk": 82, "delay_min": 52, "tobt_changes": 4, "is_remote": true, "otp": 82, "pax": 180, "ftype": "O"}, {"flight": "SQ 711", "ac": "B78X", "dest": "SIN", "bay": "D3", "sobt": "18:30", "eobt": "19:00", "tobt": "19:30", "tsat": "19:59", "aobt": "19:35", "sobt_h": 18, "risk": 81, "delay_min": 65, "tobt_changes": 4, "is_remote": true, "otp": 85, "pax": 296, "ftype": "O"}], "arr": [{"flight": "D0 037", "ac": "B763", "org": "PVG", "bay": "513", "sibt": "01:50", "eibt": "06:20", "aldt": "06:24", "sibt_h": 1, "delay_min": 270, "delay_prob": 95, "pax": 150, "ftype": "O", "nature": "8"}, {"flight": "ZH 305", "ac": "A320", "org": "SZX", "bay": "G4", "sibt": "02:15", "eibt": "06:00", "aldt": "06:04", "sibt_h": 2, "delay_min": 225, "delay_prob": 95, "pax": 170, "ftype": "O", "nature": "1"}, {"flight": "QR 836", "ac": "A388", "org": "DOH", "bay": "S113", "sibt": "13:25", "eibt": "15:53", "aldt": "15:43", "sibt_h": 13, "delay_min": 148, "delay_prob": 95, "pax": 500, "ftype": "O", "nature": "1"}, {"flight": "AF 198", "ac": "A359", "org": "CDG", "bay": "E10", "sibt": "09:25", "eibt": "11:50", "aldt": "11:44", "sibt_h": 9, "delay_min": 145, "delay_prob": 95, "pax": 320, "ftype": "O", "nature": "1"}, {"flight": "VJ 903", "ac": "A21N", "org": "HAN", "bay": "S125", "sibt": "17:45", "eibt": "20:06", "aldt": "19:57", "sibt_h": 17, "delay_min": 141, "delay_prob": 95, "pax": 185, "ftype": "O", "nature": "1"}, {"flight": "VZ 761", "ac": "A320", "org": "BOM", "bay": "S126", "sibt": "06:50", "eibt": "08:52", "aldt": "08:44", "sibt_h": 6, "delay_min": 122, "delay_prob": 95, "pax": 170, "ftype": "O", "nature": "1"}, {"flight": "G9 821", "ac": "A20N", "org": "SHJ", "bay": "F3", "sibt": "07:50", "eibt": "09:50", "aldt": "10:00", "sibt_h": 7, "delay_min": 120, "delay_prob": 95, "pax": 170, "ftype": "O", "nature": "1"}, {"flight": "CI 6884", "ac": "B744", "org": "SIN", "bay": "515", "sibt": "07:40", "eibt": "09:35", "aldt": "09:01", "sibt_h": 7, "delay_min": 115, "delay_prob": 95, "pax": 400, "ftype": "O", "nature": "8"}, {"flight": "TG 971", "ac": "B77W", "org": "ZRH", "bay": "C1", "sibt": "05:15", "eibt": "07:05", "aldt": "06:59", "sibt_h": 5, "delay_min": 110, "delay_prob": 95, "pax": 350, "ftype": "O", "nature": "1"}, {"flight": "KJ 396", "ac": "B744", "org": "SIN", "bay": "515", "sibt": "20:20", "eibt": "22:09", "aldt": "21:57", "sibt_h": 20, "delay_min": 109, "delay_prob": 95, "pax": 400, "ftype": "O", "nature": "91"}, {"flight": "PR 730", "ac": "A333", "org": "MNL", "bay": "E10", "sibt": "12:10", "eibt": "13:55", "aldt": "13:53", "sibt_h": 12, "delay_min": 105, "delay_prob": 95, "pax": 280, "ftype": "O", "nature": "1"}, {"flight": "CX 653", "ac": "A333", "org": "HKG", "bay": "G4", "sibt": "14:00", "eibt": "15:37", "aldt": "15:26", "sibt_h": 14, "delay_min": 97, "delay_prob": 95, "pax": 280, "ftype": "O", "nature": "1"}, {"flight": "LH 772", "ac": "A359", "org": "MUC", "bay": "S115", "sibt": "13:45", "eibt": "15:07", "aldt": "14:57", "sibt_h": 13, "delay_min": 82, "delay_prob": 95, "pax": 320, "ftype": "O", "nature": "1"}, {"flight": "KU 413", "ac": "B77W", "org": "KWI", "bay": "E6", "sibt": "00:50", "eibt": "02:10", "aldt": "02:11", "sibt_h": 0, "delay_min": 80, "delay_prob": 95, "pax": 350, "ftype": "O", "nature": "1"}, {"flight": "5X 146", "ac": "B763", "org": "SZX", "bay": "511", "sibt": "05:20", "eibt": "06:40", "aldt": "06:32", "sibt_h": 5, "delay_min": 80, "delay_prob": 95, "pax": 150, "ftype": "O", "nature": "8"}, {"flight": "O3 313", "ac": "B752", "org": "SZX", "bay": "514", "sibt": "16:30", "eibt": "17:46", "aldt": "17:37", "sibt_h": 16, "delay_min": 76, "delay_prob": 81, "pax": 150, "ftype": "O", "nature": "91"}, {"flight": "VJ 805", "ac": "A320", "org": "SGN", "bay": "S126", "sibt": "18:45", "eibt": "19:57", "aldt": "19:49", "sibt_h": 18, "delay_min": 72, "delay_prob": 79, "pax": 170, "ftype": "O", "nature": "1"}, {"flight": "VZ 963", "ac": "B38M", "org": "DAD", "bay": "A2", "sibt": "19:55", "eibt": "21:05", "aldt": "20:59", "sibt_h": 19, "delay_min": 70, "delay_prob": 91, "pax": 180, "ftype": "O", "nature": "1"}, {"flight": "TG 565", "ac": "A320", "org": "HAN", "bay": "S120", "sibt": "22:35", "eibt": "23:43", "aldt": "23:35", "sibt_h": 22, "delay_min": 68, "delay_prob": 76, "pax": 170, "ftype": "O", "nature": "1"}, {"flight": "KE 9357", "ac": "B744", "org": "ICN", "bay": "514", "sibt": "10:40", "eibt": "11:40", "aldt": "11:21", "sibt_h": 10, "delay_min": 60, "delay_prob": 70, "pax": 400, "ftype": "O", "nature": "8"}, {"flight": "ZH 307", "ac": "A320", "org": "SZX", "bay": "F1", "sibt": "18:15", "eibt": "19:15", "aldt": "19:44", "sibt_h": 18, "delay_min": 60, "delay_prob": 81, "pax": 170, "ftype": "O", "nature": "1"}, {"flight": "TG 639", "ac": "B77W", "org": "HKG", "bay": "S105", "sibt": "20:45", "eibt": "21:45", "aldt": "21:39", "sibt_h": 20, "delay_min": 60, "delay_prob": 83, "pax": 350, "ftype": "O", "nature": "1"}, {"flight": "TK 064", "ac": "A333", "org": "IST", "bay": "S118", "sibt": "09:45", "eibt": "10:44", "aldt": "10:34", "sibt_h": 9, "delay_min": 59, "delay_prob": 83, "pax": 280, "ftype": "O", "nature": "1"}, {"flight": "ZH 309", "ac": "A20N", "org": "SZX", "bay": "C10", "sibt": "11:10", "eibt": "12:07", "aldt": "12:00", "sibt_h": 11, "delay_min": 57, "delay_prob": 75, "pax": 170, "ftype": "O", "nature": "1"}, {"flight": "TG 322", "ac": "A333", "org": "DAC", "bay": "C9", "sibt": "17:00", "eibt": "17:56", "aldt": "17:52", "sibt_h": 17, "delay_min": 56, "delay_prob": 85, "pax": 280, "ftype": "O", "nature": "1"}, {"flight": "7C 2503", "ac": "B38M", "org": "ICN", "bay": "F5", "sibt": "00:10", "eibt": "23:49", "aldt": "23:40", "sibt_h": 0, "delay_min": 0, "delay_prob": 18, "pax": 180, "ftype": "O", "nature": "1"}, {"flight": "3U 3937", "ac": "A21N", "org": "TFU", "bay": "G1", "sibt": "00:10", "eibt": "00:03", "aldt": "23:53", "sibt_h": 0, "delay_min": 0, "delay_prob": 5, "pax": 185, "ftype": "O", "nature": "1"}, {"flight": "CA 979", "ac": "B38M", "org": "PEK", "bay": "D7", "sibt": "00:10", "eibt": "00:10", "aldt": "00:02", "sibt_h": 0, "delay_min": 0, "delay_prob": 5, "pax": 180, "ftype": "O", "nature": "1"}, {"flight": "OQ 2361", "ac": "A320", "org": "HET", "bay": "S121", "sibt": "00:15", "eibt": "23:59", "aldt": "23:50", "sibt_h": 0, "delay_min": 0, "delay_prob": 11, "pax": 170, "ftype": "O", "nature": "1"}, {"flight": "MU 547", "ac": "B789", "org": "PVG", "bay": "S116", "sibt": "00:40", "eibt": "00:14", "aldt": "00:04", "sibt_h": 0, "delay_min": 0, "delay_prob": 19, "pax": 296, "ftype": "O", "nature": "1"}], "arr_all": [{"flight": "SV 848", "ac": "B789", "org": "JED", "bay": "E4", "sibt": "00:05", "eibt": "00:30", "aldt": "00:21", "sibt_h": 0, "delay_min": 25, "delay_prob": 23, "pax": 296, "ftype": "O", "nature": "1"}, {"flight": "7C 2503", "ac": "B38M", "org": "ICN", "bay": "F5", "sibt": "00:10", "eibt": "23:49", "aldt": "23:40", "sibt_h": 0, "delay_min": 0, "delay_prob": 18, "pax": 180, "ftype": "O", "nature": "1"}, {"flight": "3U 3937", "ac": "A21N", "org": "TFU", "bay": "G1", "sibt": "00:10", "eibt": "00:03", "aldt": "23:53", "sibt_h": 0, "delay_min": 0, "delay_prob": 5, "pax": 185, "ftype": "O", "nature": "1"}, {"flight": "CA 979", "ac": "B38M", "org": "PEK", "bay": "D7", "sibt": "00:10", "eibt": "00:10", "aldt": "00:02", "sibt_h": 0, "delay_min": 0, "delay_prob": 5, "pax": 180, "ftype": "O", "nature": "1"}, {"flight": "CX 617", "ac": "A333", "org": "HKG", "bay": "E9", "sibt": "00:10", "eibt": "00:42", "aldt": "00:34", "sibt_h": 0, "delay_min": 32, "delay_prob": 37, "pax": 280, "ftype": "O", "nature": "1"}, {"flight": "OQ 2361", "ac": "A320", "org": "HET", "bay": "S121", "sibt": "00:15", "eibt": "23:59", "aldt": "23:50", "sibt_h": 0, "delay_min": 0, "delay_prob": 11, "pax": 170, "ftype": "O", "nature": "1"}, {"flight": "MU 547", "ac": "B789", "org": "PVG", "bay": "S116", "sibt": "00:40", "eibt": "00:14", "aldt": "00:04", "sibt_h": 0, "delay_min": 0, "delay_prob": 19, "pax": 296, "ftype": "O", "nature": "1"}, {"flight": "AQ 1267", "ac": "B738", "org": "CAN", "bay": "C8", "sibt": "00:45", "eibt": "01:13", "aldt": "01:06", "sibt_h": 0, "delay_min": 28, "delay_prob": 46, "pax": 180, "ftype": "O", "nature": "1"}, {"flight": "MF 843", "ac": "A21N", "org": "XMN", "bay": "E10", "sibt": "00:50", "eibt": "00:20", "aldt": "00:12", "sibt_h": 0, "delay_min": 0, "delay_prob": 5, "pax": 185, "ftype": "O", "nature": "1"}, {"flight": "ET 609", "ac": "B788", "org": "HAN", "bay": "S117", "sibt": "00:50", "eibt": "00:50", "aldt": "00:40", "sibt_h": 0, "delay_min": 0, "delay_prob": 5, "pax": 150, "ftype": "O", "nature": "1"}, {"flight": "KU 413", "ac": "B77W", "org": "KWI", "bay": "E6", "sibt": "00:50", "eibt": "02:10", "aldt": "02:11", "sibt_h": 0, "delay_min": 80, "delay_prob": 95, "pax": 350, "ftype": "O", "nature": "1"}, {"flight": "9C 6293", "ac": "A20N", "org": "XIY", "bay": "S103", "sibt": "00:50", "eibt": "00:21", "aldt": "00:16", "sibt_h": 0, "delay_min": 0, "delay_prob": 5, "pax": 170, "ftype": "O", "nature": "1"}, {"flight": "HX 759", "ac": "A320", "org": "HKG", "bay": "F3", "sibt": "01:00", "eibt": "00:46", "aldt": "00:37", "sibt_h": 1, "delay_min": 0, "delay_prob": 5, "pax": 170, "ftype": "O", "nature": "1"}, {"flight": "TW 105", "ac": "B738", "org": "TAE", "bay": "S126", "sibt": "01:05", "eibt": "01:05", "aldt": "00:24", "sibt_h": 1, "delay_min": 0, "delay_prob": 19, "pax": 180, "ftype": "O", "nature": "1"}, {"flight": "KE 655", "ac": "A21N", "org": "ICN", "bay": "G2", "sibt": "01:05", "eibt": "01:03", "aldt": "00:52", "sibt_h": 1, "delay_min": 0, "delay_prob": 5, "pax": 185, "ftype": "O", "nature": "1"}, {"flight": "MU 2803", "ac": "A20N", "org": "NKG", "bay": "D1", "sibt": "01:10", "eibt": "01:09", "aldt": "01:02", "sibt_h": 1, "delay_min": 0, "delay_prob": 18, "pax": 170, "ftype": "O", "nature": "1"}, {"flight": "EK 371", "ac": "B77W", "org": "DAD", "bay": "S119", "sibt": "01:10", "eibt": "01:13", "aldt": "01:04", "sibt_h": 1, "delay_min": 3, "delay_prob": 8, "pax": 350, "ftype": "O", "nature": "1"}, {"flight": "MU 2077", "ac": "A320", "org": "CAN", "bay": "C7", "sibt": "01:15", "eibt": "01:58", "aldt": "01:52", "sibt_h": 1, "delay_min": 43, "delay_prob": 61, "pax": 170, "ftype": "O", "nature": "1"}, {"flight": "8M 390", "ac": "A320", "org": "RGN", "bay": "G1", "sibt": "01:20", "eibt": "01:07", "aldt": "00:57", "sibt_h": 1, "delay_min": 0, "delay_prob": 5, "pax": 170, "ftype": "O", "nature": "1"}, {"flight": "MU 2563", "ac": "B738", "org": "WUH", "bay": "C9", "sibt": "01:20", "eibt": "01:01", "aldt": "00:55", "sibt_h": 1, "delay_min": 0, "delay_prob": 15, "pax": 180, "ftype": "O", "nature": "1"}, {"flight": "MU 893", "ac": "A20N", "org": "LHW", "bay": "C4", "sibt": "01:25", "eibt": "01:18", "aldt": "01:11", "sibt_h": 1, "delay_min": 0, "delay_prob": 5, "pax": 170, "ftype": "O", "nature": "1"}, {"flight": "SC 8075", "ac": "B738", "org": "TNA", "bay": "C5", "sibt": "01:25", "eibt": "01:05", "aldt": "00:59", "sibt_h": 1, "delay_min": 0, "delay_prob": 5, "pax": 180, "ftype": "O", "nature": "1"}, {"flight": "CI 837", "ac": "A21N", "org": "TPE", "bay": "D4", "sibt": "01:25", "eibt": "01:21", "aldt": "01:13", "sibt_h": 1, "delay_min": 0, "delay_prob": 15, "pax": 185, "ftype": "O", "nature": "1"}, {"flight": "9C 8755", "ac": "A21N", "org": "PVG", "bay": "S105", "sibt": "01:35", "eibt": "01:15", "aldt": "01:09", "sibt_h": 1, "delay_min": 0, "delay_prob": 5, "pax": 185, "ftype": "O", "nature": "1"}, {"flight": "CZ 8157", "ac": "A320", "org": "SZX", "bay": "C6", "sibt": "01:40", "eibt": "00:50", "aldt": "00:43", "sibt_h": 1, "delay_min": 0, "delay_prob": 15, "pax": 170, "ftype": "O", "nature": "1"}, {"flight": "NH 8507", "ac": "B763", "org": "NRT", "bay": "513", "sibt": "01:40", "eibt": "00:59", "aldt": "00:49", "sibt_h": 1, "delay_min": 0, "delay_prob": 5, "pax": 150, "ftype": "O", "nature": "8"}, {"flight": "SC 4079", "ac": "B738", "org": "TAO", "bay": "C10", "sibt": "01:50", "eibt": "02:15", "aldt": "02:08", "sibt_h": 1, "delay_min": 25, "delay_prob": 42, "pax": 180, "ftype": "O", "nature": "1"}, {"flight": "D0 037", "ac": "B763", "org": "PVG", "bay": "513", "sibt": "01:50", "eibt": "06:20", "aldt": "06:24", "sibt_h": 1, "delay_min": 270, "delay_prob": 95, "pax": 150, "ftype": "O", "nature": "8"}, {"flight": "CZ 3035", "ac": "B38M", "org": "CAN", "bay": "C1", "sibt": "01:55", "eibt": "02:01", "aldt": "01:55", "sibt_h": 1, "delay_min": 6, "delay_prob": 17, "pax": 180, "ftype": "O", "nature": "1"}, {"flight": "FM 841", "ac": "B38M", "org": "CGQ", "bay": "F5", "sibt": "01:55", "eibt": "01:44", "aldt": "01:35", "sibt_h": 1, "delay_min": 0, "delay_prob": 5, "pax": 180, "ftype": "O", "nature": "1"}, {"flight": "MU 7425", "ac": "A20N", "org": "PVG", "bay": "E2", "sibt": "02:15", "eibt": "02:08", "aldt": "01:59", "sibt_h": 2, "delay_min": 0, "delay_prob": 19, "pax": 170, "ftype": "O", "nature": "1"}, {"flight": "ZH 305", "ac": "A320", "org": "SZX", "bay": "G4", "sibt": "02:15", "eibt": "06:00", "aldt": "06:04", "sibt_h": 2, "delay_min": 225, "delay_prob": 95, "pax": 170, "ftype": "O", "nature": "1"}, {"flight": "6E 1057", "ac": "A20N", "org": "CCU", "bay": "D1", "sibt": "03:45", "eibt": "03:26", "aldt": "03:19", "sibt_h": 3, "delay_min": 0, "delay_prob": 5, "pax": 170, "ftype": "O", "nature": "1"}, {"flight": "FM 847", "ac": "B738", "org": "PVG", "bay": "F1", "sibt": "04:05", "eibt": "03:07", "aldt": "02:58", "sibt_h": 4, "delay_min": 0, "delay_prob": 11, "pax": 180, "ftype": "O", "nature": "1"}, {"flight": "TG 310", "ac": "A320", "org": "KTM", "bay": "304", "sibt": "04:25", "eibt": "03:53", "aldt": "03:46", "sibt_h": 4, "delay_min": 0, "delay_prob": 11, "pax": 170, "ftype": "O", "nature": "1"}, {"flight": "NH 849", "ac": "B789", "org": "HND", "bay": "E8", "sibt": "04:35", "eibt": "04:23", "aldt": "04:14", "sibt_h": 4, "delay_min": 0, "delay_prob": 7, "pax": 296, "ftype": "O", "nature": "1"}, {"flight": "JL 727", "ac": "B788", "org": "KIX", "bay": "E4", "sibt": "04:40", "eibt": "04:08", "aldt": "03:59", "sibt_h": 4, "delay_min": 0, "delay_prob": 5, "pax": 150, "ftype": "O", "nature": "1"}, {"flight": "TG 661", "ac": "A359", "org": "HND", "bay": "E2", "sibt": "04:50", "eibt": "03:52", "aldt": "03:43", "sibt_h": 4, "delay_min": 0, "delay_prob": 15, "pax": 320, "ftype": "O", "nature": "1"}, {"flight": "VZ 771", "ac": "A321", "org": "CCU", "bay": "A4", "sibt": "05:00", "eibt": "04:59", "aldt": "04:53", "sibt_h": 5, "delay_min": 0, "delay_prob": 15, "pax": 210, "ftype": "O", "nature": "1"}, {"flight": "TK 058", "ac": "B789", "org": "IST", "bay": "S118", "sibt": "05:10", "eibt": "05:00", "aldt": "04:50", "sibt_h": 5, "delay_min": 0, "delay_prob": 5, "pax": 296, "ftype": "O", "nature": "1"}, {"flight": "8K 801", "ac": "B734", "org": "SIN", "bay": "525", "sibt": "05:15", "eibt": "05:11", "aldt": "05:04", "sibt_h": 5, "delay_min": 0, "delay_prob": 16, "pax": 150, "ftype": "O", "nature": "8"}, {"flight": "TG 971", "ac": "B77W", "org": "ZRH", "bay": "C1", "sibt": "05:15", "eibt": "07:05", "aldt": "06:59", "sibt_h": 5, "delay_min": 110, "delay_prob": 95, "pax": 350, "ftype": "O", "nature": "1"}, {"flight": "5X 146", "ac": "B763", "org": "SZX", "bay": "511", "sibt": "05:20", "eibt": "06:40", "aldt": "06:32", "sibt_h": 5, "delay_min": 80, "delay_prob": 95, "pax": 150, "ftype": "O", "nature": "8"}, {"flight": "8K 526", "ac": "B738", "org": "HKG", "bay": "524", "sibt": "05:25", "eibt": "05:19", "aldt": "05:12", "sibt_h": 5, "delay_min": 0, "delay_prob": 9, "pax": 180, "ftype": "O", "nature": "8"}, {"flight": "TG 316", "ac": "A359", "org": "DEL", "bay": "C5", "sibt": "05:25", "eibt": "05:20", "aldt": "05:14", "sibt_h": 5, "delay_min": 0, "delay_prob": 5, "pax": 320, "ftype": "O", "nature": "1"}, {"flight": "AY 141", "ac": "A359", "org": "HEL", "bay": "E3", "sibt": "05:30", "eibt": "05:32", "aldt": "05:24", "sibt_h": 5, "delay_min": 2, "delay_prob": 13, "pax": 320, "ftype": "O", "nature": "1"}, {"flight": "TG 318", "ac": "A21N", "org": "BOM", "bay": "D4", "sibt": "05:35", "eibt": "05:14", "aldt": "05:06", "sibt_h": 5, "delay_min": 0, "delay_prob": 5, "pax": 185, "ftype": "O", "nature": "1"}, {"flight": "TG 935", "ac": "B789", "org": "BRU", "bay": "C7", "sibt": "05:35", "eibt": "05:45", "aldt": "05:39", "sibt_h": 5, "delay_min": 10, "delay_prob": 31, "pax": 296, "ftype": "O", "nature": "1"}, {"flight": "FX 6159", "ac": "B763", "org": "CAN", "bay": "518", "sibt": "05:40", "eibt": "05:23", "aldt": "05:16", "sibt_h": 5, "delay_min": 0, "delay_prob": 5, "pax": 150, "ftype": "O", "nature": "8"}, {"flight": "JL 033", "ac": "B789", "org": "HND", "bay": "G2", "sibt": "05:45", "eibt": "05:08", "aldt": "05:02", "sibt_h": 5, "delay_min": 0, "delay_prob": 10, "pax": 296, "ftype": "O", "nature": "1"}], "stats": {"total_dep": 385, "total_arr": 385, "high_risk_dep": 67, "arr_delay_60": 22, "avg_delay": 30, "total_pax": 173882, "otp": 88, "cap_util": 60, "ai_alerts": 89, "max_hourly": 46}, "hourly": {"dep": [18, 17, 18, 8, 1, 3, 5, 15, 19, 22, 16, 24, 23, 18, 18, 22, 14, 16, 18, 25, 9, 23, 16, 17], "arr": [12, 18, 2, 1, 5, 18, 22, 7, 9, 16, 23, 18, 23, 24, 27, 20, 19, 18, 21, 13, 20, 19, 12, 18], "total": [30, 35, 20, 9, 6, 21, 27, 22, 28, 38, 39, 42, 46, 42, 45, 42, 33, 34, 39, 38, 29, 42, 28, 35], "dep_pax": [4431, 4027, 4121, 1776, 170, 650, 936, 2956, 4936, 5600, 3696, 4550, 5926, 3796, 3965, 4768, 3236, 2775, 3687, 5106, 2107, 5547, 3856, 4323], "arr_pax": [2622, 3305, 340, 170, 1116, 4453, 5932, 1756, 1695, 3868, 4535, 3926, 5796, 5896, 5942, 5249, 3910, 3843, 4225, 2816, 4766, 4136, 2556, 4088]}};
 
-function rc(s){ return s>=80?'rh':s>=60?'ro':s>=30?'ry':'rg'; }
-function rl(s){ return s>=80?'High':s>=60?'Orange':s>=30?'Yellow':'Green'; }
-function rf(s){ return s>=80?'high':s>=60?'mh':s>=30?'ml':'low'; }
-function rcolor(s){ return s>=80?'#ef4444':s>=60?'#f97316':s>=30?'#eab308':'#22c55e'; }
-function ft(t){ return(!t||t==='None')?'—':t.replace('/10','').replace('/09',''); }
-
-let curFilter='all', prevTab='summary', isMobile=()=>window.innerWidth<768;
+// ── Helpers
+function rc(s){return s>=80?'h':s>=60?'o':s>=30?'y':'g'}
+function rcol(s){return s>=80?'#ef4444':s>=60?'#f97316':s>=30?'#eab308':'#22c55e'}
+function rl(s){return s>=80?'CRITICAL':s>=60?'HIGH':s>=30?'MED':'LOW'}
+function rbc(s){return s>=80?'b-red':s>=60?'b-orange':s>=30?'b-yellow':'b-green'}
+function fmt(n){return n>=1000?Math.round(n/1000)+'K':String(n)}
 
 // ── Clock
 function tick(){
   const n=new Date();
   document.getElementById('clock').textContent=
-    String(n.getHours()).padStart(2,'0')+':'+String(n.getMinutes()).padStart(2,'0');
+    [n.getHours(),n.getMinutes(),n.getSeconds()].map(x=>String(x).padStart(2,'0')).join(':');
 }
-tick(); setInterval(tick,10000);
+tick();setInterval(tick,1000);
 
-// ── Tab switch (mobile)
-function switchTab(name){
-  if(name==='detail') return;
-  prevTab=name;
+// ── Mobile tabs
+function switchTab(t){
   document.querySelectorAll('.page').forEach(p=>p.classList.remove('active'));
-  document.querySelectorAll('.tab-btn').forEach(b=>b.classList.remove('active'));
-  document.getElementById('page-'+name).classList.add('active');
-  document.getElementById('tab-'+name).classList.add('active');
+  document.querySelectorAll('.bnav-btn').forEach(b=>b.classList.remove('active'));
+  document.getElementById('page-'+t).classList.add('active');
+  document.getElementById('bnav-'+t).classList.add('active');
+  window.scrollTo(0,0);
 }
 
-function goBack(){ switchTab(prevTab||'flights'); }
-
-// ── KPI
-function renderKPI(){
-  const h=FLIGHTS.filter(f=>f.risk_score>=80).length;
-  const o=FLIGHTS.filter(f=>f.risk_score>=60&&f.risk_score<80).length;
-  const y=FLIGHTS.filter(f=>f.risk_score>=30&&f.risk_score<60).length;
-  const g=FLIGHTS.filter(f=>f.risk_score<30).length;
-  const t=FLIGHTS.length;
-  document.getElementById('kpiGrid').innerHTML=`
-    <div class="kpi-card total">
-      <div class="kpi-lbl">เที่ยวบินทั้งหมด</div>
-      <div class="kpi-val">${t}</div>
-      <div class="kpi-sub">Departure · 10 ก.ค. 69</div>
-      <div class="otp-row">
-        <div class="otp-item"><div class="otp-item-val" style="color:var(--red)">${h}</div><div class="otp-item-lbl">🔴 High</div></div>
-        <div class="otp-item"><div class="otp-item-val" style="color:var(--orange)">${o}</div><div class="otp-item-lbl">🟠 Orange</div></div>
-        <div class="otp-item"><div class="otp-item-val" style="color:var(--yellow)">${y}</div><div class="otp-item-lbl">🟡 Yellow</div></div>
-        <div class="otp-item"><div class="otp-item-val" style="color:var(--green)">${g}</div><div class="otp-item-lbl">🟢 Green</div></div>
-      </div>
-    </div>
-    <div class="kpi-card c-red"><div class="kpi-lbl">🔴 High Risk</div><div class="kpi-val">${h}</div><div class="kpi-sub">ดำเนินการทันที</div></div>
-    <div class="kpi-card c-orange"><div class="kpi-lbl">🟠 ติดตาม</div><div class="kpi-val">${o}</div><div class="kpi-sub">Risk 60–79</div></div>
-    <div class="kpi-card c-yellow"><div class="kpi-lbl">🟡 เฝ้าระวัง</div><div class="kpi-val">${y}</div><div class="kpi-sub">Risk 30–59</div></div>
-    <div class="kpi-card c-green"><div class="kpi-lbl">🟢 ปกติ</div><div class="kpi-val">${g}</div><div class="kpi-sub">Risk &lt; 30</div></div>`;
-
-  // Distribution chart
-  const cats=[{l:'High 80+',v:h,c:'#ef4444'},{l:'Orange 60',v:o,c:'#f97316'},{l:'Yellow 30',v:y,c:'#eab308'},{l:'Green <30',v:g,c:'#22c55e'}];
-  const mx=Math.max(...cats.map(c=>c.v));
-  document.getElementById('distChart').innerHTML=cats.map(c=>`
-    <div style="flex:1;display:flex;flex-direction:column;align-items:center;gap:4px;height:100%;justify-content:flex-end;">
-      <div style="font-size:13px;font-weight:700;color:${c.c};font-family:'IBM Plex Mono',monospace">${c.v}</div>
-      <div style="width:100%;height:${Math.round((c.v/mx)*60)}px;background:${c.c};border-radius:5px 5px 0 0;opacity:.85;min-height:5px;"></div>
+// ── KPI render
+function buildKPIs(container){
+  const s=D.stats;
+  const kpis=[
+    {cls:'ck',lbl:'Total Flights',val:s.total_arr+s.total_dep,sub:'ARR+DEP Today'},
+    {cls:'bk',lbl:'Arrivals',val:s.total_arr,sub:'Inbound'},
+    {cls:'bk',lbl:'Departures',val:s.total_dep,sub:'Outbound'},
+    {cls:'rk',lbl:'AI Alerts',val:s.ai_alerts,sub:'Needs Action'},
+    {cls:'ok',lbl:'ARR Delay >60',val:s.arr_delay_60,sub:'Flights'},
+    {cls:'ok',lbl:'DEP High Risk',val:s.high_risk_dep,sub:'Risk≥70'},
+    {cls:'gk',lbl:'Airport OTP',val:s.otp+'%',sub:'On-Time Perf'},
+    {cls:'yk',lbl:'Avg Delay',val:s.avg_delay+"'",sub:'Minutes'},
+    {cls:'pk',lbl:'Est. Pax',val:fmt(s.total_pax),sub:'Today Total'},
+    {cls:'ck',lbl:'CAP Util',val:s.cap_util+'%',sub:'Peak Hour'},
+    {cls:'bk',lbl:'Runway Use',val:'3 RWY',sub:'Active'},
+    {cls:'rk',lbl:'Peak Movements',val:s.max_hourly,sub:'per Hour Max'},
+  ];
+  if(!container)return kpis;
+  container.innerHTML=kpis.map(k=>`
+    <div class="kpi ${k.cls}">
+      <div class="kpi-lbl">${k.lbl}</div>
+      <div class="kpi-val">${k.val}</div>
+      <div class="kpi-sub">${k.sub}</div>
     </div>`).join('');
-  document.getElementById('distLbls').innerHTML=cats.map(c=>`<div style="flex:1;text-align:center;font-size:9px;color:var(--muted)">${c.l}</div>`).join('');
 }
 
-// ── Traffic
-function renderTraffic(id1,id2){
-  const hrs=['07','08','09','10','11','12','13','14','15','16','17','18','19','20'];
-  const isPeak=h=>['07','08','09','17','18','19'].includes(h);
-  const seed=hrs.map(h=>isPeak(h)?Math.floor(Math.random()*7+12):Math.floor(Math.random()*5+4));
-  const mx=Math.max(...seed);
-  const bars=hrs.map((h,i)=>`
-    <div class="tbar-wrap">
-      <div class="tbar" style="height:${Math.round(seed[i]/mx*100)}%;background:${isPeak(h)?'#f97316':'#3b82f6'};opacity:.8;"></div>
+// ── Desktop KPI bar
+function renderDesktopKpi(){
+  const kpis=buildKPIs(null);
+  document.getElementById('desktopKpi').innerHTML=kpis.slice(0,12).map(k=>`
+    <div class="kpi ${k.cls}">
+      <div class="kpi-lbl">${k.lbl}</div>
+      <div class="kpi-val" style="font-size:18px">${k.val}</div>
     </div>`).join('');
-  const lbls=hrs.map(h=>`<div style="flex:1;text-align:center;font-size:8px;color:var(--muted)">${h}</div>`).join('');
-  [id1,id2].forEach(id=>{const el=document.getElementById(id);if(el)el.innerHTML=bars;});
-  ['trafficLbls','trafficLbls2'].forEach(id=>{const el=document.getElementById(id);if(el)el.innerHTML=lbls;});
 }
 
-// ── Flights
-function setFilter(f,btn){
-  curFilter=f;
-  document.querySelectorAll('.pill').forEach(b=>b.classList.remove('active'));
-  btn.classList.add('active');
-  renderFlights();
+// ── Mobile KPI
+buildKPIs(document.getElementById('mobileKpi'));
+renderDesktopKpi();
+
+// ── Passenger Forecast
+function renderPax(){
+  const h=D.hourly;
+  const now=new Date().getHours();
+  const next1arr=h.arr_pax.slice(now,now+1).reduce((a,b)=>a+b,0);
+  const next2arr=h.arr_pax.slice(now,now+2).reduce((a,b)=>a+b,0);
+  const next3arr=h.arr_pax.slice(now,now+3).reduce((a,b)=>a+b,0);
+  const next1dep=h.dep_pax.slice(now,now+1).reduce((a,b)=>a+b,0);
+  const next2dep=h.dep_pax.slice(now,now+2).reduce((a,b)=>a+b,0);
+  const totalPax=D.stats.total_pax;
+  document.getElementById('paxTotal').textContent=fmt(totalPax);
+  const termLoad=Math.min(95,Math.round(totalPax/30000*100));
+  document.getElementById('paxGrid').innerHTML=`
+    <div class="pax-cell"><div class="pax-lbl">Next 1H (ARR)</div><div class="pax-val" style="color:#22c55e">${fmt(next1arr)}</div></div>
+    <div class="pax-cell"><div class="pax-lbl">Next 1H (DEP)</div><div class="pax-val" style="color:#3b82f6">${fmt(next1dep)}</div></div>
+    <div class="pax-cell"><div class="pax-lbl">Next 2H (ARR)</div><div class="pax-val" style="color:#22c55e">${fmt(next2arr)}</div></div>
+    <div class="pax-cell"><div class="pax-lbl">Next 2H (DEP)</div><div class="pax-val" style="color:#3b82f6">${fmt(next2dep)}</div></div>
+    <div class="pax-cell"><div class="pax-lbl">Terminal Load</div><div class="pax-val" style="color:${termLoad>80?'#ef4444':termLoad>60?'#f97316':'#22c55e'}">${termLoad}%</div></div>
+    <div class="pax-cell"><div class="pax-lbl">Immigration</div><div class="pax-val" style="color:#eab308">${Math.round(termLoad*0.8)}%</div></div>
+    <div class="pax-cell"><div class="pax-lbl">Security Load</div><div class="pax-val" style="color:#a855f7">${Math.round(termLoad*0.7)}%</div></div>
+    <div class="pax-cell"><div class="pax-lbl">Baggage Claim</div><div class="pax-val" style="color:#22d3ee">${Math.round(termLoad*0.6)}%</div></div>`;
+}
+renderPax();
+
+// ── Hourly Chart
+function renderHourly(){
+  const h=D.hourly;
+  const max=Math.max(...h.total);
+  const CAP=76;
+  document.getElementById('hourlyChart').innerHTML=h.dep.map((_,i)=>{
+    const dep=h.dep[i], arr=h.arr[i], tot=h.total[i];
+    const pct=max>0?tot/max:0;
+    const isAlert=tot>60;
+    return `<div class="bar-group">
+      <div class="bar-seg" style="height:${Math.round(arr/max*72)}px;background:${isAlert?'rgba(239,68,68,.7)':'rgba(34,211,238,.7)'}"></div>
+      <div class="bar-seg" style="height:${Math.round(dep/max*72)}px;background:${isAlert?'rgba(249,115,22,.7)':'rgba(59,130,246,.7)'}"></div>
+    </div>`;
+  }).join('');
+  document.getElementById('hourlyLbls').innerHTML=h.dep.map((_,i)=>
+    `<div style="flex:1;text-align:center;font-size:7px;color:var(--muted)">${String(i).padStart(2,'0')}</div>`
+  ).join('');
+}
+renderHourly();
+
+// ── Runway gauge
+function renderRunway(){
+  const maxH=D.stats.max_hourly;
+  const CAP=76;
+  const pct=Math.min(1,maxH/CAP);
+  const arc=251;
+  const fill=arc*(1-pct);
+  ['gaugeFill','gaugeFill2'].forEach(id=>{
+    const el=document.getElementById(id);
+    if(el)el.setAttribute('stroke-dashoffset',fill);
+  });
+  ['gaugeVal','gaugeVal2'].forEach(id=>{
+    const el=document.getElementById(id);
+    if(el)el.textContent=maxH;
+  });
+  const capPct=Math.round(pct*100);
+  const rwyEl=document.getElementById('rwyCap');
+  if(rwyEl)rwyEl.textContent=`${capPct}% Utilized`;
+
+  const arrH=D.hourly.arr.reduce((a,b)=>a+b,0);
+  const depH=D.hourly.dep.reduce((a,b)=>a+b,0);
+  const rwyHTML=`
+    <div class="rwy-cell"><div class="rwy-val" style="color:#22d3ee">${D.stats.total_arr}</div><div class="rwy-lbl">Arrivals</div></div>
+    <div class="rwy-cell"><div class="rwy-val" style="color:#3b82f6">${D.stats.total_dep}</div><div class="rwy-lbl">Departures</div></div>
+    <div class="rwy-cell"><div class="rwy-val" style="color:${capPct>80?'#ef4444':'#eab308'}">${capPct}%</div><div class="rwy-lbl">Utilized</div></div>`;
+  ['rwyStats','rwyStats2'].forEach(id=>{
+    const el=document.getElementById(id);
+    if(el)el.innerHTML=rwyHTML;
+  });
+}
+renderRunway();
+
+// ── OTP Trend
+function renderOTP(){
+  const trend=[82,84,79,86,88,87,D.stats.otp];
+  const max=Math.max(...trend);
+  document.getElementById('otpTrend').innerHTML=trend.map(v=>`
+    <div class="trend-bar" style="height:${Math.round(v/max*48)}px;background:${v>=85?'#22c55e':v>=80?'#3b82f6':'#f97316'}"></div>`).join('');
+}
+renderOTP();
+
+// ── Alert scroll
+const alerts=[
+  `D0 037 · Risk 97 · Delay 270min · ต้องดำเนินการทันที`,
+  `ZH 306 · Risk 97 · Remote Stand · TOBT เปลี่ยน 5 ครั้ง`,
+  `QR 836 · Arrival delay 148 min · origin DOH`,
+  `Runway utilization peak ${D.stats.max_hourly}/76 · ตรวจสอบ Traffic Flow`,
+  `${D.stats.arr_delay_60} เที่ยวบินขาเข้าล่าช้า >60 นาที · แจ้ง Immigration`,
+  `${D.stats.high_risk_dep} เที่ยวบินขาออก High Risk · ประสาน Ground Handler`,
+];
+const txt=alerts.join('   ·   ');
+document.getElementById('alertScroll').innerHTML=txt+'   ·   '+txt;
+
+// ── DEP List
+let depFilter='all';
+function dFilter(f,btn){
+  depFilter=f;
+  document.querySelectorAll('[onclick^="dFilter"]').forEach(b=>{b.style.opacity='.5'});
+  btn.style.opacity='1';
+  renderDep();
 }
 
-function renderFlights(){
-  const list=curFilter==='all'?FLIGHTS:FLIGHTS.filter(f=>rf(f.risk_score)===curFilter);
-  document.getElementById('flightBadge').textContent=list.length+' เที่ยวบิน';
-  document.getElementById('flightList').innerHTML=list.map((f,i)=>{
-    const cls=rc(f.risk_score); const col=rcolor(f.risk_score);
-    const dest=DEST[f.dest]||f.dest;
-    return `<div class="flight-card ${cls}" onclick="openFlight(${FLIGHTS.indexOf(f)})">
+function renderDep(){
+  const list=depFilter==='all'?D.dep:D.dep.filter(f=>{
+    const r=rc(f.risk);
+    return (depFilter==='h'&&r==='h')||(depFilter==='o'&&r==='o')||(depFilter==='y'&&r==='y')||(depFilter==='g'&&r==='g');
+  });
+  document.getElementById('depBadge').textContent=list.length+' flights';
+  document.getElementById('depList').innerHTML=list.map((f,i)=>{
+    const col=rcol(f.risk);
+    const rcls=rc(f.risk);
+    const factors=[];
+    if(f.tobt_changes>=3)factors.push('TOBT ×'+f.tobt_changes);
+    if(f.is_remote)factors.push('Remote');
+    if(f.otp<78)factors.push('OTP '+f.otp+'%');
+    if(f.delay_min>20)factors.push('+'+f.delay_min+"'");
+    return `<div class="fc risk-${rcls}" onclick="openDepDetail(${i})">
       <div class="fc-top">
         <div>
-          <div class="fc-flight">${f.flight}</div>
-          <span class="fc-al">${f.al}</span>
+          <div class="fc-flt">${f.flight}</div>
+          <div class="fc-al">${f.ac} · ${f.dest||'—'} · Bay ${f.bay||'—'}</div>
         </div>
-        <div class="risk-circle" style="border-color:${col};color:${col}">
-          <div>${f.risk_score}</div>
-          <div class="risk-lbl-sm">${rl(f.risk_score)}</div>
+        <div class="fc-score-wrap">
+          <div class="fc-score" style="border-color:${col};color:${col}">
+            ${f.risk}<div class="fc-slbl">${rl(f.risk)}</div>
+          </div>
         </div>
       </div>
       <div class="fc-mid">
-        <div class="fc-info"><div class="fc-info-lbl">ปลายทาง</div><div class="fc-info-val" style="font-size:13px">${dest}</div></div>
-        <div class="fc-info"><div class="fc-info-lbl">SOBT</div><div class="fc-info-val">${ft(f.sobt)}</div></div>
-        <div class="fc-info"><div class="fc-info-lbl">Bay</div><div class="fc-info-val" style="color:${f.is_remote?'#f97316':'#4ade80'};font-size:11px">${f.bay}${f.is_remote?' ⬡':' ◉'}</div></div>
+        <div class="fc-cell"><div class="fc-cell-l">SOBT</div><div class="fc-cell-v">${f.sobt}</div></div>
+        <div class="fc-cell"><div class="fc-cell-l">TOBT</div><div class="fc-cell-v" style="color:${f.tobt!==f.sobt?'#f97316':'inherit'}">${f.tobt}</div></div>
+        <div class="fc-cell"><div class="fc-cell-l">TSAT</div><div class="fc-cell-v">${f.tsat}</div></div>
       </div>
-      <div class="fc-factors">${f.factors.slice(0,3).map(fc=>`<span class="fc-factor">${fc}</span>`).join('')}</div>
+      <div class="fc-tags">
+        ${factors.map(t=>`<span class="fc-tag">${t}</span>`).join('')}
+        <span class="badge ${rbc(f.risk)}">${rl(f.risk)}</span>
+      </div>
     </div>`;
   }).join('');
 }
+renderDep();
 
-// ── Flight Detail
-function getRecs(f){
-  const r=[];
-  if(f.risk_score>=80){r.push('ประสาน Ground Handler เร่ง Boarding ทันที');r.push('แจ้ง ATFMU ความเสี่ยงพลาด CTOT');}
-  if(f.tobt_changes>=3) r.push('ขอปรับ TOBT ให้สอดคล้องกับสถานการณ์จริง');
-  if(f.is_remote) r.push('จัดรถ Bus ล่วงหน้าสำหรับ Remote Stand');
-  if(f.is_peak) r.push('ระวัง Traffic congestion ช่วง Peak Hour');
-  if(f.otp<75) r.push(`ติดตาม OTP ของ ${f.al} เป็นพิเศษ`);
-  if(f.weather>10) r.push('ตรวจสอบ SIGMET ก่อน Pushback');
-  if(!r.length) r.push('ไม่มีการดำเนินการพิเศษ — ติดตามตามปกติ');
-  return r;
-}
-
-function buildDetailHTML(f){
-  const col=rcolor(f.risk_score);
-  const dest=DEST[f.dest]||f.dest;
-  const recs=getRecs(f);
-  const factors=[
-    {l:'Airline OTP',v:Math.round((100-f.otp)*.3),c:'#818cf8'},
-    {l:'TOBT Changes',v:f.tobt_changes*5,c:'#f97316'},
-    {l:'TSAT Shifts',v:f.tsat_shifts*4,c:'#eab308'},
-    {l:'Remote Stand',v:f.is_remote?15:0,c:'#a78bfa'},
-    {l:'Peak Hour',v:f.is_peak?10:0,c:'#22d3ee'},
-    {l:'EOBT Delay',v:Math.round(f.eobt_delay*.5),c:'#fb7185'},
-    {l:'Weather',v:f.weather,c:'#34d399'},
-  ];
-  const ficons={'TOBT':'🔄','TSAT':'⏱','Remote':'📍','Peak':'🚦','OTP':'📉','EOBT':'⏳','อากาศ':'⛈','ปกติ':'✅'};
-  function fi(s){for(const[k,v]of Object.entries(ficons))if(s.includes(k))return v;return '⚠️';}
-  return `
-    <div class="detail-hero">
-      <div>
-        <div class="detail-flight-num">${f.flight}</div>
-        <div class="detail-sub">${f.al} · ${f.ac} · ${dest}</div>
+// ── ARR List
+function renderArr(){
+  const list=D.arr;
+  document.getElementById('arrBadge').textContent=D.stats.arr_delay_60+' flights >60min delay';
+  document.getElementById('arrList').innerHTML=list.map((f,i)=>{
+    const d=f.delay_min;
+    const cls=d>=60?'dl60':d>=30?'dl30':'dl0';
+    const col=d>=60?'#ef4444':d>=30?'#f97316':'#22c55e';
+    return `<div class="ac ${cls}" onclick="openArrDetail(${i})">
+      <div class="ac-top">
+        <div>
+          <div class="ac-flt">${f.flight}</div>
+          <div style="font-size:10px;color:var(--muted);margin-top:2px">${f.ac} · From ${f.org||'—'} · Bay ${f.bay||'—'}</div>
+        </div>
+        ${d>0?`<div class="delay-pill">+${d}'</div>`:`<span class="badge b-green">ON TIME</span>`}
       </div>
-      <div class="big-circle" style="border-color:${col};color:${col}">
-        <div>${f.risk_score}</div>
-        <div class="big-lbl">${rl(f.risk_score)}</div>
+      <div class="ac-mid">
+        <div class="fc-cell"><div class="fc-cell-l">SIBT</div><div class="fc-cell-v">${f.sibt}</div></div>
+        <div class="fc-cell"><div class="fc-cell-l">EIBT</div><div class="fc-cell-v" style="color:${d>0?col:'inherit'}">${f.eibt}</div></div>
+        <div class="fc-cell"><div class="fc-cell-l">PAX Est.</div><div class="fc-cell-v" style="color:#a855f7">${f.pax}</div></div>
+        <div class="fc-cell"><div class="fc-cell-l">Prob</div><div class="fc-cell-v" style="color:${col}">${Math.min(95,f.delay_prob)}%</div></div>
       </div>
-    </div>
-
-    <div class="info-grid">
-      <div class="info-cell"><div class="info-lbl">Bay / Gate</div><div class="info-val">${f.bay} / ${f.gate}</div></div>
-      <div class="info-cell"><div class="info-lbl">Stand Type</div><div class="info-val" style="color:${f.is_remote?'#f97316':'#4ade80'}">${f.is_remote?'REMOTE ⬡':'CONTACT ◉'}</div></div>
-      <div class="info-cell"><div class="info-lbl">SOBT</div><div class="info-val">${ft(f.sobt)}</div></div>
-      <div class="info-cell"><div class="info-lbl">EOBT</div><div class="info-val" style="color:${f.eobt!==f.sobt?'#f97316':'inherit'}">${ft(f.eobt)}</div></div>
-      <div class="info-cell"><div class="info-lbl">TOBT เปลี่ยน</div><div class="info-val" style="color:${f.tobt_changes>=3?'#ef4444':'inherit'}">${f.tobt_changes} ครั้ง</div></div>
-      <div class="info-cell"><div class="info-lbl">Airline OTP</div><div class="info-val" style="color:${f.otp<75?'#ef4444':f.otp<85?'#eab308':'#22c55e'}">${f.otp}%</div></div>
-    </div>
-
-    <div class="factor-section">
-      <div class="fs-title">📊 AI Risk Factor Breakdown</div>
-      ${factors.map(fs=>`<div class="fbar-row">
-        <div class="fbar-lbl">${fs.l}</div>
-        <div class="fbar-track"><div class="fbar-fill" style="width:${Math.min(100,fs.v*3.5)}%;background:${fs.c}"></div></div>
-        <div class="fbar-val" style="color:${fs.c}">${fs.v}</div>
-      </div>`).join('')}
-    </div>
-
-    <div class="factor-section">
-      <div class="fs-title">⚠️ ปัจจัยเสี่ยงที่ตรวจพบ</div>
-      <div class="factor-tags">${f.factors.map(fc=>`<div class="factor-tag"><span>${fi(fc)}</span><span>${fc}</span></div>`).join('')}</div>
-    </div>
-
-    <div class="rec-section">
-      <div class="rec-title">🤖 AI Recommendations</div>
-      ${recs.map(r=>`<div class="rec-item">${r}</div>`).join('')}
     </div>`;
+  }).join('');
 }
+renderArr();
 
-function openFlight(idx){
-  const f=FLIGHTS[idx];
-  const html=buildDetailHTML(f);
-  if(isMobile()){
-    document.getElementById('detailContent').innerHTML=html;
-    document.querySelectorAll('.page').forEach(p=>p.classList.remove('active'));
-    document.getElementById('page-detail').classList.add('active');
-    document.querySelectorAll('.tab-btn').forEach(b=>b.classList.remove('active'));
-    window.scrollTo(0,0);
-  } else {
-    document.getElementById('overlayContent').innerHTML=html;
-    document.getElementById('desktopOverlay').classList.add('open');
-  }
+// ── AI Recommendations
+const recs=[
+  {cls:'urgent',icon:'🚨',title:'CRITICAL: Coordinate Ground Handlers',body:`${D.stats.high_risk_dep} เที่ยวบินขาออก Risk ≥70 ต้องการการประสาน Ground Handler ทันที เพื่อเร่ง Boarding และ Pushback ก่อน TSAT หมด`},
+  {cls:'urgent',icon:'✈',title:'Prioritize High-Risk Pushback',body:`D0 037, ZH 306, G9 822 มี Risk Score 97 — จัดลำดับ Pushback ให้มีลำดับความสำคัญสูงสุด และแจ้ง TWR ล่วงหน้า`},
+  {cls:'warn',icon:'🛬',title:'Arrival Delay >60min: Alert Immigration',body:`${D.stats.arr_delay_60} เที่ยวบินล่าช้า >60 นาที — แจ้ง Immigration เพิ่มเจ้าหน้าที่ช่วง Peak เพื่อรองรับผู้โดยสารที่จะมาถึงพร้อมกัน`},
+  {cls:'warn',icon:'🌧',title:'Weather Impact: Remote Stand Risk',body:'สภาพอากาศฝนตก + ลมแรง Gust 22kt มีผลต่อเที่ยวบิน Remote Stand — ตรวจสอบ TSAT Deviation และ Bus availability'},
+  {cls:'warn',icon:'🔄',title:'Update TOBT for Delayed Flights',body:'เที่ยวบินที่ TOBT เปลี่ยน ≥3 ครั้ง ควรขอ TOBT ใหม่ที่สอดคล้องกับ Actual Situation เพื่อหลีกเลี่ยง TSAT ไม่ตรง'},
+  {cls:'info',icon:'📊',title:'Runway Capacity: Peak Hour Preparation',body:`Peak movement คือ ${D.stats.max_hourly} เที่ยวบิน/ชั่วโมง — ยังต่ำกว่า CAP (76) — แต่ควรเตรียม Runway Sequencing ล่วงหน้า`},
+  {cls:'info',icon:'🚍',title:'Allocate Remote Stand Buses',body:'เที่ยวบิน Remote Stand มีความเสี่ยงล่าช้าสูงขึ้น 15 คะแนน — จัดรถ Bus ล่วงหน้า 30 นาทีก่อน SOBT'},
+  {cls:'info',icon:'👥',title:'Passenger Forecast: Security Staffing',body:`ผู้โดยสารประมาณ ${fmt(D.stats.total_pax)} คนวันนี้ — แนะนำเพิ่มช่องตรวจ Security ช่วง 07-09 และ 17-20`},
+];
+['recList','recListAI'].forEach(id=>{
+  const el=document.getElementById(id);
+  if(el)el.innerHTML=recs.map(r=>`
+    <div class="rec ${r.cls}">
+      <div class="rec-icon">${r.icon}</div>
+      <div><div class="rec-title">${r.title}</div><div class="rec-body">${r.body}</div></div>
+    </div>`).join('');
+});
+const aiBadge=document.getElementById('aiBadge');
+if(aiBadge)aiBadge.textContent=recs.length+' actions';
+
+// ── Detail handlers (simplified - open in mobile detail page)
+function openDepDetail(i){
+  const f=D.dep[i];
+  if(!f)return;
+  // On mobile: could extend to a detail page; for now just highlight
+  console.log('DEP detail:',f.flight);
 }
-
-function closeOverlay(){
-  document.getElementById('desktopOverlay').classList.remove('open');
-}
-
-// ── Init
-renderKPI();
-renderTraffic('trafficBars','trafficBars2');
-renderFlights();
-
-// On mobile, start on summary; on desktop, show flights
-if(!isMobile()){
-  document.getElementById('page-flights').classList.add('active');
+function openArrDetail(i){
+  const f=D.arr[i];
+  if(!f)return;
+  console.log('ARR detail:',f.flight);
 }
 </script>
 </body>
